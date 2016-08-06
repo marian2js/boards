@@ -3,7 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "node ./server/bin/www"
+    "start": "node ./server/bin/www",
+    "serve": "gulp serve"
   },
   "dependencies": {
     "body-parser": "1.15.1",
@@ -13,5 +14,10 @@
     "express": "4.13.4",
     "morgan": "1.7.0",
     "serve-favicon": "2.3.0"
+  },
+  "devDependencies": {
+    "connect-livereload": "0.5.4",
+    "gulp": "3.9.1",
+    "gulp-live-server": "0.0.30"
   }
 }
