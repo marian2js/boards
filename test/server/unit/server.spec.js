@@ -1,5 +1,5 @@
 const http = require('http');
-const server = require('server/server');
+const server = require('server');
 
 describe('Server', () => {
 

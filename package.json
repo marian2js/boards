@@ -5,7 +5,7 @@
   "scripts": {
     "start": "node ./server/bin/www",
     "serve": "gulp serve",
-    "test": "NODE_PATH=. NODE_ENV=test gulp test"
+    "test": "NODE_PATH=./server NODE_ENV=test gulp test"
   },
   "dependencies": {
     "body-parser": "1.15.1",
