@@ -1,10 +1,12 @@
 const http = require('http');
 const config = require('./config');
+const db = require(`./storage/${config.db}.storage`);
 
 module.exports = {
 
   start(app) {
-    return this._configServer(app);
+    return this._configServer(app)
+      .then(() => db.connect());
   },
 
   /**
