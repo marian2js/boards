@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 
-const debug = require('debug')('boards:server');
 const app = require('../app');
 const server = require('../server');
+const Logger = require('utils/logger');
+const logger = new Logger('www');
 
 // Run server
 server.start(app)
@@ -14,7 +15,7 @@ function onSuccess() {
   var bind = typeof addr === 'string'
     ? 'pipe ' + addr
     : 'port ' + addr.port;
-  debug('Listening on ' + bind);
+  logger.debug('Listening on ' + bind);
 }
 
 function onError(error) {
@@ -29,11 +30,11 @@ function onError(error) {
   // handle specific listen errors with friendly messages
   switch (error.code) {
     case 'EACCES':
-      console.error(bind + ' requires elevated privileges');
+      logger.error(bind + ' requires elevated privileges');
       process.exit(1);
       break;
     case 'EADDRINUSE':
-      console.error(bind + ' is already in use');
+      logger.error(bind + ' is already in use');
       process.exit(1);
       break;
     default:
