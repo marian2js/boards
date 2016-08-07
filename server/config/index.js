@@ -2,7 +2,7 @@ let config = {};
 
 // Set environment
 config.env = process.env.NODE_ENV;
-if(!['development', 'production'].includes(config.env)) {
+if(!['development', 'test', 'production'].includes(config.env)) {
   config.env = 'development';
 }
 

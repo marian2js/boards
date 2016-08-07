@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "start": "node ./server/bin/www",
-    "serve": "gulp serve"
+    "serve": "gulp serve",
+    "test": "NODE_PATH=. NODE_ENV=test gulp test"
   },
   "dependencies": {
     "body-parser": "1.15.1",
@@ -18,6 +19,7 @@
   "devDependencies": {
     "connect-livereload": "0.5.4",
     "gulp": "3.9.1",
+    "gulp-jasmine": "2.4.0",
     "gulp-live-server": "0.0.30"
   }
 }
