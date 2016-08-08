@@ -5,6 +5,9 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 
+// Adds support for .env file
+require('dotenv').config();
+
 var routes = require('./routes/index');
 var users = require('./routes/users');
 
