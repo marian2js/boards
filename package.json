@@ -8,11 +8,13 @@
     "test": "NODE_PATH=./server NODE_ENV=test gulp test"
   },
   "dependencies": {
+    "bcrypt": "0.8.7",
     "body-parser": "1.15.1",
     "cookie-parser": "1.4.3",
     "dotenv": "2.0.0",
     "ejs": "2.4.1",
     "express": "4.13.4",
+    "jsonwebtoken": "7.1.7",
     "mongoose": "4.5.8",
     "morgan": "1.7.0",
     "serve-favicon": "2.3.0",
@@ -22,6 +24,7 @@
     "connect-livereload": "0.5.4",
     "gulp": "3.9.1",
     "gulp-jasmine": "2.4.0",
-    "gulp-live-server": "0.0.30"
+    "gulp-live-server": "0.0.30",
+    "mockgoose": "6.0.6"
   }
 }

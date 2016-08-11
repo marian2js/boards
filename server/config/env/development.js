@@ -5,5 +5,8 @@ module.exports = {
   },
   mongo: {
     uri: 'mongodb://localhost/boards-dev'
+  },
+  crypto: {
+    bcrypt_salt_factor: 1
   }
 };
