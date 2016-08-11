@@ -1,5 +1,7 @@
 const http = require('http');
 const server = require('server');
+const config = require('config');
+const db = require(`storage/${config.db}.storage`);
 
 describe('Server', () => {
 
@@ -23,6 +25,7 @@ describe('Server', () => {
       spyOn(http, 'createServer').and.returnValue(httpServer);
       spyOn(httpServer, 'listen').and.callThrough();
       spyOn(httpServer, 'on').and.callThrough();
+      spyOn(db, 'connect').and.returnValue(Promise.resolve());
     });
 
     it('should configure the http server', done => {
@@ -49,6 +52,15 @@ describe('Server', () => {
       server.start(app)
         .then(() => {
           expect(server.httpServer).toBe(httpServer);
+          done();
+        })
+        .catch(err => done.fail(err));
+    });
+
+    it('should connect to the database', done => {
+      server.start(app)
+        .then(() => {
+          expect(db.connect).toHaveBeenCalled();
           done();
         })
         .catch(err => done.fail(err));
