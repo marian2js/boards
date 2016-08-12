@@ -2,7 +2,11 @@ module.exports = {
   base_url: process.env.BASE_URL,
   db: 'mongo',
   auth: {
-    request_code_length: +process.env.REQUEST_CODE_LENGTH || 32
+    request_code_length: +process.env.REQUEST_CODE_LENGTH || 32,
+    google: {
+      client_id: process.env.GOOGLE_CLIENT_ID,
+      client_secret: process.env.GOOGLE_CLIENT_SECRET
+    }
   },
   secrets: {
     jwt: process.env.JWT_SECRET
