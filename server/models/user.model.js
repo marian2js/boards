@@ -38,6 +38,22 @@ UserSchema
   });
 
 /**
+ * Returns the data that can be sent to the client
+ */
+UserSchema.methods.getReadableData = function () {
+  return {
+    id: this.id,
+    username: this.username,
+    email: this.email,
+    first_name: this.first_name,
+    last_name: this.last_name,
+    gender: this.gender,
+    birthday: this.birthday,
+    created_at: this.created_at
+  };
+};
+
+/**
  * Generates a code for requesting the access token and stores its hash
  *
  * @returns {Promise}

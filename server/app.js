@@ -9,9 +9,6 @@ const passport = require('passport');
 // Adds support for .env file
 require('dotenv').config();
 
-var routes = require('./routes/index');
-var users = require('./routes/users');
-
 var app = express();
 
 // view engine setup
@@ -26,9 +23,10 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', routes);
-app.use('/users', users);
+// Config Routes
+app.use('/', require('./routes/index'));
 app.use('/auth', require('./routes/auth.routes'));
+app.use('/api/v1', require('./routes/api.routes'));
 
 app.use(passport.initialize());
 
