@@ -1,14 +1,6 @@
-class AuthError extends Error {
+const RequestError = require('./req.errors').RequestError;
 
-  constructor(message) {
-    super(message);
-    this.message = message;
-    this.name = this.constructor.name;
-  }
-
-}
-
-class UnknownProviderError extends AuthError {
+class UnknownProviderError extends RequestError {
 
   constructor(message) {
     super(`Unknown provider "${message}"`);
@@ -17,7 +9,7 @@ class UnknownProviderError extends AuthError {
 
 }
 
-class AuthFailedError extends AuthError {
+class AuthFailedError extends RequestError {
 
   constructor(message) {
     super(message || 'Authentication Failed');
@@ -27,7 +19,6 @@ class AuthFailedError extends AuthError {
 }
 
 module.exports = {
-  AuthError,
   UnknownProviderError,
   AuthFailedError
 };
