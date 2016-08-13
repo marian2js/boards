@@ -76,7 +76,7 @@ UserSchema.methods.getAccessToken = function(code) {
     })
     .then(() => {
       if (data.isValid) {
-        return jwt.sign(this._id, config.secrets.jwt);
+        return jwt.sign({ id: this.id }, config.secrets.jwt);
       }
     });
 };
