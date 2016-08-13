@@ -100,7 +100,7 @@ describe('User Model', () => {
         .then(accessToken => {
           expect(accessToken).toBe('access_token');
           expect(CryptoUtils.validateHash).toHaveBeenCalledWith('random_code', 'hashed_code');
-          expect(jwt.sign).toHaveBeenCalledWith(user._id, 'jwt_secret');
+          expect(jwt.sign).toHaveBeenCalledWith({ id: user.id }, 'jwt_secret');
           done();
         })
         .catch(err => done.fail(err));
