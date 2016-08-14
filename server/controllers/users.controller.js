@@ -2,6 +2,7 @@ const jwt = require('express-jwt');
 const _ = require('lodash');
 const config = require('config');
 const User = require('../models/user.model');
+const Board = require('../models/board.model');
 const UserErrors = require('errors/user.errors');
 
 module.exports = {
@@ -20,6 +21,26 @@ module.exports = {
     req.user.setEditableData(req.body);
     return req.user.save()
       .then(() => res.send(req.user.getReadableData()))
+      .catch(err => next(new UserErrors.UnknownUserError(err.message || err)));
+  },
+
+  /**
+   * Get an array with the boards of an user
+   */
+  getUserBoards(req, res, next) {
+    let query = {
+      user: req.user.id
+    };
+    let options = {
+      sort: {
+        created_at: -1
+      }
+    };
+    Board.find(query, {}, options)
+      .then(boards => {
+        let boardsData = boards.map(board => board.getReadableData());
+        res.send(boardsData);
+      })
       .catch(err => next(new UserErrors.UnknownUserError(err.message || err)));
   },
 
