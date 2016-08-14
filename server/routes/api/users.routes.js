@@ -7,5 +7,6 @@ router.use(userController.verifyPermissions);
 
 router.get('/:userId/request_access_token', userController.requestAccessToken);
 router.get('/:userId', userController.getUserById);
+router.put('/:userId', userController.updateUserById);
 
 module.exports = router;

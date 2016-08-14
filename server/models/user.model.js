@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
+const _ = require('lodash');
 const config = require('config');
 const CryptoUtils = require('../utils/crypto.utils');
 
@@ -51,6 +52,24 @@ UserSchema.methods.getReadableData = function () {
     birthday: this.birthday,
     created_at: this.created_at
   };
+};
+
+/**
+ * Sets only the data that can be edited by the users
+ */
+UserSchema.methods.setEditableData = function (data) {
+  let editableKeys = [
+    'username',
+    'email',
+    'first_name',
+    'last_name',
+    'gender',
+    'birthday'
+  ];
+  let editableData = _.pick(data, editableKeys);
+  _.forEach(editableData, (value, key) => {
+    this[key] = value;
+  });
 };
 
 /**

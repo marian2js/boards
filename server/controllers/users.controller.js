@@ -1,4 +1,5 @@
 const jwt = require('express-jwt');
+const _ = require('lodash');
 const config = require('config');
 const User = require('../models/user.model');
 const UserErrors = require('errors/user.errors');
@@ -10,6 +11,16 @@ module.exports = {
    */
   getUserById(req, res) {
     res.send(req.user.getReadableData());
+  },
+
+  /**
+   * Update user by ID
+   */
+  updateUserById(req, res) {
+    req.user.setEditableData(req.body);
+    return req.user.save()
+      .then(() => res.send(req.user.getReadableData()))
+      .catch(err => next(new UserErrors.UnknownUserError(err.message || err)));
   },
 
   /**
