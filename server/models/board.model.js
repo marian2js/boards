@@ -49,4 +49,19 @@ BoardSchema.methods.setEditableData = function (data) {
   });
 };
 
+/**
+ * Find the boards that belongs to an user
+ */
+BoardSchema.statics.findByUserId = function (userId) {
+  let query = {
+    user: userId
+  };
+  let options = {
+    sort: {
+      created_at: -1
+    }
+  };
+  return this.find(query, {}, options);
+};
+
 module.exports = mongoose.model('boards', BoardSchema);

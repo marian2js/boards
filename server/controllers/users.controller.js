@@ -28,15 +28,7 @@ module.exports = {
    * Get an array with the boards of an user
    */
   getUserBoards(req, res, next) {
-    let query = {
-      user: req.user.id
-    };
-    let options = {
-      sort: {
-        created_at: -1
-      }
-    };
-    Board.find(query, {}, options)
+    Board.findByUserId(req.user.id)
       .then(boards => {
         let boardsData = boards.map(board => board.getReadableData());
         res.send(boardsData);

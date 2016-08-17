@@ -58,4 +58,47 @@ describe('Board Model', () => {
         });
     });
   });
+  
+  describe('findByUserId', () => {
+    let user1, user2;
+
+    beforeEach(done => {
+      user1 = new User({
+        _id: new mongoose.Types.ObjectId()
+      });
+      user2 = new User({
+        _id: new mongoose.Types.ObjectId()
+      });
+      let promises = [
+        createBoard({ name: 'Board 1', user: user1 }),
+        createBoard({ name: 'Board 2', user: user1 }),
+        createBoard({ name: 'Board 3', user: user2 })
+      ];
+      Promise.all(promises)
+        .then(done);
+    });
+
+    it('should find all the boards that belongs to an user', done => {
+      Board.findByUserId(user1._id)
+        .then(boards => {
+          expect(boards.length).toBe(2);
+          let boardNames = boards.map(board => board.name);
+          expect(boardNames.includes('Board 1')).toBe(true);
+          expect(boardNames.includes('Board 2')).toBe(true);
+          expect(boardNames.includes('Board 3')).toBe(false);
+          done();
+        })
+        .catch(err => done.fail(err));
+    });
+
+    it('should return an empty array if the user doesn\'t have boards', done => {
+      let userId = new mongoose.Types.ObjectId();
+      Board.findByUserId(userId)
+        .then(boards => {
+          expect(boards.length).toBe(0);
+          done();
+        })
+        .catch(err => done.fail(err));
+    });
+  });
 });
