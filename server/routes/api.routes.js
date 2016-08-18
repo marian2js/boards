@@ -7,5 +7,6 @@ router.use(userController.validateAuth);
 
 router.use('/users', require('./api/users.routes'));
 router.use('/boards', require('./api/boards.routes'));
+router.use('/lists', require('./api/lists.routes'));
 
 module.exports = router;
