@@ -39,16 +39,12 @@ module.exports = {
     if (!boardId) {
       return next();
     }
-    Board.findById(boardId)
-      .then(board => {
-        if (!board) {
-          return next(new BoardErrors.BoardNotFoundError());
-        }
-        if (board.user !== req.user.id) {
-          return next(new UserErrors.UnauthorizedUserError());
-        }
-        req.board = board;
-      });
+    Board.verifyPermissions(boardId, req.user.id)
+      .then(data => {
+        req.board = data.board;
+        next();
+      })
+      .catch(err => next(err || new BoardErrors.UnknownBoardError()));
   }
 
 };

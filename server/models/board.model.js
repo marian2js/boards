@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
 const _ = require('lodash');
+const BoardErrors = require('errors/board.errors');
+const UserErrors = require('errors/user.errors');
 
 const BoardSchema = new mongoose.Schema({
   user: {
@@ -62,6 +64,24 @@ BoardSchema.statics.findByUserId = function (userId) {
     }
   };
   return this.find(query, {}, options);
+};
+
+/**
+ * Finds a board by ID only if the user has permissions to use it
+ */
+BoardSchema.statics.verifyPermissions = function (boardId, userId) {
+  return this.findById(boardId)
+    .then(board => {
+      if (!board) {
+        throw new BoardErrors.BoardNotFoundError(boardId);
+      }
+      if (board.user.toString() !== userId.toString()) {
+        throw new UserErrors.UnauthorizedUserError();
+      }
+      return {
+        board
+      };
+    });
 };
 
 module.exports = mongoose.model('boards', BoardSchema);

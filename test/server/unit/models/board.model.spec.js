@@ -2,6 +2,8 @@ const mongoose = require('mongoose');
 const mockgoose = require('mockgoose');
 const Board = require('models/board.model');
 const User = require('models/user.model');
+const BoardErrors = require('errors/board.errors');
+const UserErrors = require('errors/user.errors');
 const TestUtils  = require('../test.utils');
 
 describe('Board Model', () => {
@@ -99,6 +101,45 @@ describe('Board Model', () => {
           done();
         })
         .catch(err => done.fail(err));
+    });
+  });
+
+  describe('verifyPermissions', () => {
+    let user;
+
+    beforeEach(done => {
+      user = new User();
+      createBoard({ user })
+        .then(done);
+    });
+
+    it('should return the matching board', done => {
+      Board.verifyPermissions(board.id, user.id)
+        .then(data => {
+          expect(data.board).toBeDefined();
+          expect(data.board.id).toEqual(board.id);
+          expect(data.board.user.toString()).toEqual(user.id);
+          done();
+        })
+        .catch(err => done.fail(err));
+    });
+
+    it('should throw an error if the board id doesn\'t exist', done => {
+      let boardId = new mongoose.Types.ObjectId();
+      Board.verifyPermissions(boardId, user.id)
+        .catch(err => {
+          expect(err instanceof BoardErrors.BoardNotFoundError).toBe(true);
+          done();
+        });
+    });
+
+    it('should throw an error if the user can\'t use the board', done => {
+      let userId = new mongoose.Types.ObjectId();
+      Board.verifyPermissions(board.id, userId)
+        .catch(err => {
+          expect(err instanceof UserErrors.UnauthorizedUserError).toBe(true);
+          done();
+        });
     });
   });
 });
