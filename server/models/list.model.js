@@ -59,6 +59,21 @@ ListSchema.methods.setEditableData = function (data) {
 };
 
 /**
+ * Find the lists of a board
+ */
+ListSchema.statics.findByBoardId = function (boardId) {
+  let query = {
+    board: boardId
+  };
+  let options = {
+    sort: {
+      position: 1
+    }
+  };
+  return this.find(query, {}, options);
+};
+
+/**
  * Finds a list by ID only if the user has permissions to use it
  */
 ListSchema.statics.verifyPermissions = function (listId, userId) {

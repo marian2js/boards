@@ -1,4 +1,5 @@
 const Board = require('models/board.model');
+const List = require('models/list.model');
 const BoardErrors = require('errors/board.errors');
 
 module.exports = {
@@ -27,6 +28,18 @@ module.exports = {
     req.board.setEditableData(req.body);
     return req.board.save()
       .then(() => res.send(req.board.getReadableData()))
+      .catch(err => next(new BoardErrors.UnknownBoardError(err.message || err)));
+  },
+
+  /**
+   * Get an array with the boards of an user
+   */
+  getBoardLists(req, res, next) {
+    List.findByBoardId(req.board.id)
+      .then(lists => {
+        let listsData = lists.map(list => list.getReadableData());
+        res.send(listsData);
+      })
       .catch(err => next(new BoardErrors.UnknownBoardError(err.message || err)));
   },
 
