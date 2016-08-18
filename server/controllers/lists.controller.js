@@ -15,6 +15,32 @@ module.exports = {
   },
 
   /**
+   * Get data from a list by ID
+   */
+  getListById(req, res) {
+    res.send(req.list.getReadableData());
+  },
+
+  /**
+   * Update list by ID
+   */
+  updateListById(req, res, next) {
+    req.list.setEditableData(req.body);
+    return req.list.save()
+      .then(() => res.send(req.list.getReadableData()))
+      .catch(err => next(new ListErrors.UnknownListError(err.message || err)));
+  },
+
+  /**
+   * Delete list by ID
+   */
+  deleteListById(req, res, next) {
+    return req.list.remove()
+      .then(() => res.status(204).end())
+      .catch(err => next(new ListErrors.UnknownListError(err.message || err)));
+  },
+
+  /**
    * Verifies if the logged user has permissions to use the endpoint
    */
   verifyPermissions(req, res, next) {
