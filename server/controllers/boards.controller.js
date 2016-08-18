@@ -1,6 +1,5 @@
 const Board = require('models/board.model');
 const BoardErrors = require('errors/board.errors');
-const UserErrors = require('errors/user.errors');
 
 module.exports = {
 
@@ -26,9 +25,9 @@ module.exports = {
    */
   updateBoardById(req, res, next) {
     req.board.setEditableData(req.body);
-    return req.user.save()
-      .then(() => res.send(req.user.getReadableData()))
-      .catch(err => next(new UserErrors.UnknownUserError(err.message || err)));
+    return req.board.save()
+      .then(() => res.send(req.board.getReadableData()))
+      .catch(err => next(new BoardErrors.UnknownBoardError(err.message || err)));
   },
 
   /**
