@@ -15,6 +15,32 @@ module.exports = {
   },
 
   /**
+   * Get data from a task by ID
+   */
+  getTaskById(req, res) {
+    res.send(req.task.getReadableData());
+  },
+
+  /**
+   * Update task by ID
+   */
+  updateTaskById(req, res, next) {
+    req.task.setEditableData(req.body);
+    return req.task.save()
+      .then(() => res.send(req.task.getReadableData()))
+      .catch(err => next(new TaskErrors.UnknownTaskError(err.message || err)));
+  },
+
+  /**
+   * Delete task by ID
+   */
+  deleteTaskById(req, res, next) {
+    return req.task.remove()
+      .then(() => res.status(204).end())
+      .catch(err => next(new TaskErrors.UnknownTaskError(err.message || err)));
+  },
+
+  /**
    * Verifies if the logged user has permissions to use the endpoint
    */
   verifyPermissions(req, res, next) {
