@@ -54,7 +54,7 @@ module.exports = {
     } else if (boardId) {
       verifyPromise = Board.verifyPermissions(boardId, req.user.id);
     } else {
-      return next();
+      return next(new ListErrors.UnknownListError());
     }
 
     verifyPromise
@@ -63,7 +63,7 @@ module.exports = {
         req.list = data.list;
         next();
       })
-      .catch(err => next(err || new ListErrors.UnknownBoardError()));
+      .catch(err => next(err || new ListErrors.UnknownListError()));
   }
 
 };
