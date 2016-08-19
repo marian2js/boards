@@ -7,7 +7,11 @@ module.exports = {
     uri: 'mongodb://localhost/boards-test'
   },
   auth: {
-    request_code_length: 32
+    request_code_length: 32,
+    google: {
+      client_id: 'google_client_id',
+      client_secret: 'google_client_secret'
+    }
   },
   secrets: {
     jwt: 'jwt_secret'
