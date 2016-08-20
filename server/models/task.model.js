@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const _ = require('lodash');
 const List = require('models/list.model');
+const ModelUtils = require('utils/model.utils');
 const TaskErrors = require('errors/task.errors');
 
 const TaskSchema = new mongoose.Schema({
@@ -22,7 +23,13 @@ const TaskSchema = new mongoose.Schema({
   description: String,
   position: {
     type: Number,
-    required: true
+    required: true,
+
+    // if the position is changed, keep track of the old position
+    set: function(position) {
+      this._oldPosition = this.position;
+      return position;
+    }
   },
   created_at: {
     type: Date,
@@ -84,4 +91,44 @@ TaskSchema.statics.verifyPermissions = function (taskId, userId) {
     .then(listData => Object.assign(data, listData));
 };
 
-module.exports = mongoose.model('tasks', TaskSchema);
+/**
+ * [Pre Save Hook]
+ * Validate that the position is between 0 and the count of tasks in the list
+ */
+TaskSchema.pre('save', function (next) {
+  let countQuery = {
+    list: this.list
+  };
+  ModelUtils.validatePosition(Task, this.position, this._oldPosition, countQuery)
+    .then(() => next())
+    .catch(next);
+});
+
+/**
+ * [Pre Save Hook]
+ * Update the positions of the tasks in the list
+ */
+TaskSchema.pre('save', function (next) {
+  let updateQuery = {
+    list: this.list
+  };
+  ModelUtils.updatePositions(Task, this.position, this._oldPosition, updateQuery)
+    .then(() => next())
+    .catch(next);
+});
+
+/**
+ * [Post Remove Hook]
+ * Update the positions of the following tasks in the list
+ */
+TaskSchema.post('remove', function (next) {
+  let updateQuery = {
+    list: this.list
+  };
+  ModelUtils.updatePositions(Task, this.position, -1, updateQuery)
+    .then(() => next())
+    .catch(next);
+});
+
+const Task = mongoose.model('tasks', TaskSchema);
+module.exports = Task;

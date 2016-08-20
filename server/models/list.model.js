@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const _ = require('lodash');
 const Board = require('models/board.model');
+const ModelUtils = require('utils/model.utils');
 const ListErrors = require('errors/list.errors');
 
 const ListSchema = new mongoose.Schema({
@@ -16,7 +17,13 @@ const ListSchema = new mongoose.Schema({
   },
   position: {
     type: Number,
-    required: true
+    required: true,
+
+    // if the position is changed, keep track of the old position
+    set: function(position) {
+      this._oldPosition = this.position;
+      return position;
+    }
   },
   created_at: {
     type: Date,
@@ -89,4 +96,44 @@ ListSchema.statics.verifyPermissions = function (listId, userId) {
     .then(board => Object.assign(data, board));
 };
 
-module.exports = mongoose.model('lists', ListSchema);
+/**
+ * [Pre Save Hook]
+ * Validate that the position is between 0 and the count of lists in the board
+ */
+ListSchema.pre('save', function (next) {
+  let countQuery = {
+    board: this.board
+  };
+  ModelUtils.validatePosition(List, this.position, this._oldPosition, countQuery)
+    .then(() => next())
+    .catch(next);
+});
+
+/**
+ * [Pre Save Hook]
+ * Update the positions of the lists in the board
+ */
+ListSchema.pre('save', function (next) {
+  let updateQuery = {
+    board: this.board
+  };
+  ModelUtils.updatePositions(List, this.position, this._oldPosition, updateQuery)
+    .then(() => next())
+    .catch(next);
+});
+
+/**
+ * [Post Remove Hook]
+ * Update the positions of the following lists in the board
+ */
+ListSchema.post('remove', function (next) {
+  let updateQuery = {
+    board: this.board
+  };
+  ModelUtils.updatePositions(List, this.position, -1, updateQuery)
+    .then(() => next())
+    .catch(next);
+});
+
+const List = mongoose.model('lists', ListSchema);
+module.exports = List;
