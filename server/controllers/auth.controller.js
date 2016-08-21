@@ -1,7 +1,7 @@
 const StrategyFactory = require('security/auth/strategy-factory');
 const AuthErrors = require('errors/auth.errors');
 const Logger = require('utils/logger');
-const logger = new Logger('User Controller');
+const logger = new Logger('Auth Controller');
 
 module.exports = {
 
@@ -30,6 +30,7 @@ module.exports = {
     }
     strategy.authCallback()(req, res, data => {
       if (data.user && data.user.id && data.code) {
+        logger.info(`User ID "${data.user.id}" authenticated successfully`);
         res.redirect(`/process-login?id=${data.user.id}&code=${data.code}`);
       } else {
         next(new AuthErrors.AuthFailedError());

@@ -1,16 +1,23 @@
 const List = require('models/list.model');
 const Task = require('models/task.model');
 const TaskErrors = require('errors/task.errors');
+const Logger = require('utils/logger');
+const logger = new Logger('Tasks Controller');
 
 module.exports = {
 
   createTask(req, res, next) {
+    logger.debug('Creating task with data:', req.body);
+
     let task = new Task({
       board: req.board.id
     });
     task.setEditableData(req.body);
     return task.save()
-      .then(() => res.send(task.getReadableData()))
+      .then(() => {
+        logger.info(`Task ID "${task.id}" created`);
+        res.send(task.getReadableData());
+      })
       .catch(err => next(new TaskErrors.UnknownTaskError(err.message || err)));
   },
 
@@ -25,9 +32,14 @@ module.exports = {
    * Update task by ID
    */
   updateTaskById(req, res, next) {
+    logger.debug('Updating task with data:', req.body);
+
     req.task.setEditableData(req.body);
     return req.task.save()
-      .then(() => res.send(req.task.getReadableData()))
+      .then(() => {
+        logger.info(`Task ID "${req.task.id}" updated`);
+        res.send(req.task.getReadableData());
+      })
       .catch(err => next(new TaskErrors.UnknownTaskError(err.message || err)));
   },
 
@@ -35,8 +47,13 @@ module.exports = {
    * Delete task by ID
    */
   deleteTaskById(req, res, next) {
+    logger.debug(`Deleting task "${req.task.id}"`);
+
     return req.task.remove()
-      .then(() => res.status(204).end())
+      .then(() => {
+        logger.info(`Task ID "${req.task.id}" deleted`);
+        res.status(204).end();
+      })
       .catch(err => next(new TaskErrors.UnknownTaskError(err.message || err)));
   },
 

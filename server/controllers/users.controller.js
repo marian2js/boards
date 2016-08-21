@@ -4,6 +4,8 @@ const config = require('config');
 const User = require('../models/user.model');
 const Board = require('../models/board.model');
 const UserErrors = require('errors/user.errors');
+const Logger = require('utils/logger');
+const logger = new Logger('Users Controller');
 
 module.exports = {
 
@@ -18,9 +20,14 @@ module.exports = {
    * Update user by ID
    */
   updateUserById(req, res) {
+    logger.debug('Updating user with data:', req.body);
+
     req.user.setEditableData(req.body);
     return req.user.save()
-      .then(() => res.send(req.user.getReadableData()))
+      .then(() => {
+        logger.info(`User ID "${req.user.id}" updated`);
+        res.send(req.user.getReadableData());
+      })
       .catch(err => next(new UserErrors.UnknownUserError(err.message || err)));
   },
 

@@ -1,16 +1,23 @@
 const List = require('models/list.model');
 const Board = require('models/board.model');
 const ListErrors = require('errors/list.errors');
+const Logger = require('utils/logger');
+const logger = new Logger('Lists Controller');
 
 module.exports = {
 
   createList(req, res, next) {
+    logger.debug('Creating list with data:', req.body);
+
     let list = new List({
       board: req.body.board
     });
     list.setEditableData(req.body);
     return list.save()
-      .then(() => res.send(list.getReadableData()))
+      .then(() => {
+        logger.info(`List "${list.name}" created`);
+        res.send(list.getReadableData());
+      })
       .catch(err => next(new ListErrors.UnknownListError(err.message || err)));
   },
 
@@ -25,9 +32,14 @@ module.exports = {
    * Update list by ID
    */
   updateListById(req, res, next) {
+    logger.debug('Updating list with data:', req.body);
+
     req.list.setEditableData(req.body);
     return req.list.save()
-      .then(() => res.send(req.list.getReadableData()))
+      .then(() => {
+        logger.info(`List "${req.list.name}" updated`);
+        res.send(req.list.getReadableData());
+      })
       .catch(err => next(new ListErrors.UnknownListError(err.message || err)));
   },
 
@@ -35,8 +47,13 @@ module.exports = {
    * Delete list by ID
    */
   deleteListById(req, res, next) {
+    logger.debug(`Deleting list "${req.list.name}"`);
+
     return req.list.remove()
-      .then(() => res.status(204).end())
+      .then(() => {
+        logger.info(`List "${req.list.name}" deleted`);
+        res.status(204).end();
+      })
       .catch(err => next(new ListErrors.UnknownListError(err.message || err)));
   },
 
