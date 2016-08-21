@@ -1,5 +1,6 @@
 const Board = require('models/board.model');
 const List = require('models/list.model');
+const Task = require('models/task.model');
 const BoardErrors = require('errors/board.errors');
 const Logger = require('utils/logger');
 const logger = new Logger('Boards Controller');
@@ -44,13 +45,25 @@ module.exports = {
   },
 
   /**
-   * Get an array with the boards of an user
+   * Get all the lists of a board
    */
   getBoardLists(req, res, next) {
     List.findByBoardId(req.board.id)
       .then(lists => {
         let listsData = lists.map(list => list.getReadableData());
         res.send(listsData);
+      })
+      .catch(err => next(new BoardErrors.UnknownBoardError(err.message || err)));
+  },
+
+  /**
+   * Get all the tasks of a board
+   */
+  getBoardTasks(req, res, next) {
+    Task.findByBoardId(req.board.id)
+      .then(tasks => {
+        let tasksData = tasks.map(list => list.getReadableData());
+        res.send(tasksData);
       })
       .catch(err => next(new BoardErrors.UnknownBoardError(err.message || err)));
   },

@@ -88,6 +88,49 @@ describe('Task Model', () => {
     });
   });
 
+  describe('findByBoardId', () => {
+    let board1, board2;
+
+    beforeEach(done => {
+      board1 = new Board({
+        _id: new mongoose.Types.ObjectId()
+      });
+      board2 = new Board({
+        _id: new mongoose.Types.ObjectId()
+      });
+      let promises = [
+        createTask({ name: 'Task 1', board: board1 }),
+        createTask({ name: 'Task 2', board: board1 }),
+        createTask({ name: 'Task 3', board: board2 })
+      ];
+      Promise.all(promises)
+        .then(done);
+    });
+
+    it('should find all the tasks of one board', done => {
+      Task.findByBoardId(board1._id)
+        .then(tasks => {
+          expect(tasks.length).toBe(2);
+          let taskNames = tasks.map(task => task.name);
+          expect(taskNames.includes('Task 1')).toBe(true);
+          expect(taskNames.includes('Task 2')).toBe(true);
+          expect(taskNames.includes('Task 3')).toBe(false);
+          done();
+        })
+        .catch(err => done.fail(err));
+    });
+
+    it('should return an empty array if the board doesn\'t have tasks', done => {
+      let boardId = new mongoose.Types.ObjectId();
+      Task.findByBoardId(boardId)
+        .then(tasks => {
+          expect(tasks.length).toBe(0);
+          done();
+        })
+        .catch(err => done.fail(err));
+    });
+  });
+
   describe('verifyPermissions', () => {
     let user;
 

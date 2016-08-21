@@ -76,6 +76,22 @@ TaskSchema.methods.setEditableData = function (data) {
 };
 
 /**
+ * Find the tasks of a board
+ */
+TaskSchema.statics.findByBoardId = function (boardId) {
+  let query = {
+    board: boardId
+  };
+  let options = {
+    sort: {
+      list: -1,
+      position: 1
+    }
+  };
+  return this.find(query, {}, options);
+};
+
+/**
  * Finds a task by ID only if the user has permissions to use it
  */
 TaskSchema.statics.verifyPermissions = function (taskId, userId) {
