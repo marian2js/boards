@@ -14,7 +14,8 @@ describe('Model Utils', () => {
 
     let expectValidPosition = (newPosition, oldPosition, done) => {
       spyOn(model, 'count').and.returnValue(Promise.resolve(5));
-      ModelUtils.validatePosition(model, newPosition, oldPosition, { q: 1 })
+      let isNew = oldPosition === undefined || oldPosition === null;
+      ModelUtils.validatePosition(model, newPosition, oldPosition, isNew, { q: 1 })
         .then(() => {
           expect(model.count).toHaveBeenCalledWith({ q: 1 });
           done();
@@ -24,7 +25,8 @@ describe('Model Utils', () => {
 
     let expectRangeError = (newPosition, oldPosition, done) => {
       spyOn(model, 'count').and.returnValue(Promise.resolve(5));
-      ModelUtils.validatePosition(model, newPosition, oldPosition, { q: 1 })
+      let isNew = oldPosition === undefined || oldPosition === null;
+      ModelUtils.validatePosition(model, newPosition, oldPosition, isNew, { q: 1 })
         .catch(err => {
           expect(err instanceof Errors.InvalidRangeError).toBe(true);
           done();
@@ -90,7 +92,7 @@ describe('Model Utils', () => {
       let newPosition = 3;
       let oldPosition = 3;
       spyOn(model, 'count').and.returnValue(Promise.resolve(5));
-      ModelUtils.validatePosition(model, newPosition, oldPosition, { q: 1 })
+      ModelUtils.validatePosition(model, newPosition, oldPosition, false, { q: 1 })
         .then(() => {
           expect(model.count).not.toHaveBeenCalled();
           done();

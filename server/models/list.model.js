@@ -104,7 +104,7 @@ ListSchema.pre('save', function (next) {
   let countQuery = {
     board: this.board
   };
-  ModelUtils.validatePosition(List, this.position, this._oldPosition, countQuery)
+  ModelUtils.validatePosition(List, this.position, this._oldPosition, this.isNew, countQuery)
     .then(() => next())
     .catch(next);
 });

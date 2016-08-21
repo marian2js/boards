@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const Errors = require('errors/generic.errors');
 
 module.exports = {
@@ -7,9 +8,9 @@ module.exports = {
    *
    * @returns {Promise}
    */
-  validatePosition(model, newPosition, oldPosition, countQuery) {
+  validatePosition(model, newPosition, oldPosition, isNew, countQuery) {
     // If the position is not changed, nothing to do
-    if (oldPosition && oldPosition === newPosition) {
+    if (!isNew && oldPosition === newPosition) {
       return Promise.resolve();
     }
 
@@ -22,7 +23,7 @@ module.exports = {
     return model.count(countQuery)
       .then(count => {
         let maxPosition = count;
-        if (!oldPosition) {
+        if (isNew) {
           maxPosition++;
         }
         if (newPosition >= maxPosition) {
@@ -37,8 +38,10 @@ module.exports = {
    * @returns {Promise}
    */
   updatePositions(model, newPosition, oldPosition, updateQuery) {
+    let isNew = oldPosition === null || oldPosition === undefined;
+
     // If the position is not changed, nothing to do
-    if (oldPosition && oldPosition === newPosition) {
+    if (!isNew && oldPosition === newPosition) {
       return Promise.resolve();
     }
 
@@ -47,7 +50,7 @@ module.exports = {
     let inc;
 
     // Define position range to update
-    if (oldPosition) {
+    if (!isNew) {
       if (oldPosition === -1) {
         fromPosition = newPosition;
         inc = -1;

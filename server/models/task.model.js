@@ -14,7 +14,13 @@ const TaskSchema = new mongoose.Schema({
   list: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'List',
-    required: true
+    required: true,
+
+    // if the list is changed, keep track of the old list
+    set: function(list) {
+      this._oldList = this.list;
+      return list;
+    }
   },
   name: {
     type: String,
@@ -115,20 +121,56 @@ TaskSchema.pre('save', function (next) {
   let countQuery = {
     list: this.list
   };
-  ModelUtils.validatePosition(Task, this.position, this._oldPosition, countQuery)
+  let isNew = this.isNew || this.list.toString() !== this._oldList.toString();
+  ModelUtils.validatePosition(Task, this.position, this._oldPosition, isNew, countQuery)
     .then(() => next())
     .catch(next);
 });
 
 /**
  * [Pre Save Hook]
- * Update the positions of the tasks in the list
+ * Update the positions of the other tasks when a task is added or moved on the same list
  */
 TaskSchema.pre('save', function (next) {
+  // If the change is between lists, nothing to do here
+  if (!this.isNew && this.list.toString() !== this._oldList.toString()) {
+    return next();
+  }
   let updateQuery = {
     list: this.list
   };
   ModelUtils.updatePositions(Task, this.position, this._oldPosition, updateQuery)
+    .then(() => next())
+    .catch(next);
+});
+
+/**
+ * [Pre Save Hook]
+ * Update the positions of the other tasks when a task is moved between lists
+ */
+TaskSchema.pre('save', function (next) {
+  if (this.isNew || this.list.toString() === this._oldList.toString()) {
+    return next();
+  }
+
+  let updateQuery = {
+    _id: {
+      $ne: this._id
+    },
+    list: this._oldList
+  };
+  if (_.isUndefined(this._oldPosition)) {
+    this._oldPosition = this.position;
+  }
+
+  // update positions on the old list
+  ModelUtils.updatePositions(Task, this._oldPosition, -1, updateQuery)
+    .then(() => {
+      updateQuery.list = this.list;
+
+      // update positions on the new list
+      return ModelUtils.updatePositions(Task, this.position, null, updateQuery);
+    })
     .then(() => next())
     .catch(next);
 });
