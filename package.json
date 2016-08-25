@@ -21,6 +21,7 @@
     "morgan": "1.7.0",
     "passport": "0.3.2",
     "passport-google-oauth": "1.0.0",
+    "phantom-html2pdf": "3.0.0",
     "serve-favicon": "2.3.0",
     "winston": "2.2.0"
   },

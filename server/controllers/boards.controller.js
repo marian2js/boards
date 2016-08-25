@@ -1,6 +1,7 @@
 const Board = require('models/board.model');
 const List = require('models/list.model');
 const Task = require('models/task.model');
+const PrintableUtils = require('utils/printable.utils');
 const BoardErrors = require('errors/board.errors');
 const Logger = require('utils/logger');
 const logger = new Logger('Boards Controller');
@@ -64,6 +65,28 @@ module.exports = {
       .then(tasks => {
         let tasksData = tasks.map(list => list.getReadableData());
         res.send(tasksData);
+      })
+      .catch(err => next(new BoardErrors.UnknownBoardError(err.message || err)));
+  },
+
+  /**
+   * Get a PDF with the printable data of the board
+   */
+  exportPrintableBoard(req, res, next) {
+    logger.debug(`Generating printable version of board "${req.board.name}"`);
+
+    let data = {};
+    List.findByBoardId(req.board.id)
+      .then(lists => {
+        data.lists = lists;
+        return Task.findByBoardId(req.board.id)
+      })
+      .then(tasks => {
+        return PrintableUtils.generatePrintableBoard(req.board, data.lists, tasks);
+      })
+      .then(stream => {
+        logger.info(`Printable version of board "${req.board.name}" generated`);
+        stream.pipe(res);
       })
       .catch(err => next(new BoardErrors.UnknownBoardError(err.message || err)));
   },

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title><%= board.name %></title>
+  <style>
+    .break {
+      page-break-after: always;
+    }
+
+    .clear {
+      clear: both;
+    }
+
+    .item {
+      width: 48%;
+      margin: 0 1% 1% 0;
+      float: left;
+      border: 5px solid #000;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+
+    .list {
+      text-align: center;
+      height: 50px;
+      padding: 10px 20px;
+      font-size: 18px
+    }
+
+    .task {
+      height: 250px;
+      padding: 20px;
+    }
+  </style>
+</head>
+<body>
+  <% let e = 0; %>
+
+  <% for (let i = 0; i < lists.length; i++) { %>
+    <% if (e > 20 && i % 2 === 0) { %>
+      <div class="break"></div>
+      <% e = 0%>
+    <% } %>
+    <div class="item list"><%= lists[i].name %></div>
+    <% e++ %>
+  <% } %>
+
+  <% e+= 2 %>
+  <div class="clear"></div>
+
+  <% for (let i = 0; i < tasks.length; i++) { %>
+    <% if (e > 20 && i % 2 === 0) { %>
+      <div class="clear break"></div>
+      <% e = 0%>
+    <% } %>
+    <div class="item task"><%= tasks[i].name %></div>
+    <% e += 5 %>
+  <% } %>
+</body>
+</html>
