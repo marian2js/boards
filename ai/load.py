@@ -3,6 +3,9 @@ from random import shuffle
 from six.moves import cPickle as pickle
 from config import config
 from utils import image_utils
+from utils.logger import Logger
+
+logger = Logger('load')
 
 tasks_train_dataset = image_utils.load_model_images(config['task']['folder'])
 lists_train_dataset = image_utils.load_model_images(config['list']['folder'])
@@ -39,8 +42,8 @@ train_labels = labels[0:num_train]
 test_dataset = dataset[num_train:]
 test_labels = labels[num_train:]
 
-print('Train Dataset:', train_dataset.shape, train_labels.shape)
-print('Test Dataset:', test_dataset.shape, test_labels.shape)
+logger.info('Train Dataset: %s %s' % (train_dataset.shape, train_labels.shape))
+logger.info('Test Dataset: %s %s' % (test_dataset.shape, test_labels.shape))
 
 try:
     with open(config['dataset_pickle_file'], 'wb') as f:
@@ -51,6 +54,6 @@ try:
             'test_labels': test_labels,
         }
         pickle.dump(pickle_data, f, pickle.HIGHEST_PROTOCOL)
-        print('Created pickle: %s' % config['dataset_pickle_file'])
+        logger.info('Created pickle: %s' % config['dataset_pickle_file'])
 except Exception as e:
-    print('Error creating pickle: %s' % config['dataset_pickle_file'], e)
+    logger.error('Error creating pickle: %s' % config['dataset_pickle_file'], e)

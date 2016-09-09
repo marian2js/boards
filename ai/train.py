@@ -4,6 +4,9 @@ from six.moves import cPickle as pickle
 import time
 from model import Model
 from config import config
+from utils.logger import Logger
+
+logger = Logger('train')
 
 start_time = time.time()
 
@@ -35,8 +38,8 @@ def reformat(dataset, labels):
 train_dataset, train_labels = reformat(train_dataset, train_labels)
 test_dataset, test_labels = reformat(test_dataset, test_labels)
 
-print('Training set', train_dataset.shape, train_labels.shape)
-print('Test set', test_dataset.shape, test_labels.shape)
+logger.info('Training set %s %s' % (train_dataset.shape, train_labels.shape))
+logger.info('Test set %s %s' % (test_dataset.shape, test_labels.shape))
 
 graph = tf.Graph()
 
@@ -69,15 +72,15 @@ with tf.Session(graph=graph) as sess:
         if i % 100 == 0:
             train_accuracy = accuracy.eval(
                 feed_dict={model.train_data: batch_data, label_data: batch_labels})
-            print("step %d, training accuracy %g" % (i, train_accuracy))
+            logger.info("step %d, training accuracy %g" % (i, train_accuracy))
 
         train_step.run(feed_dict={model.train_data: batch_data, label_data: batch_labels})
 
     save_path = saver.save(sess, config['model_file'])
-    print("Model saved in file: %s" % save_path)
+    logger.info("Model saved in file: %s" % save_path)
 
     # Evaluate test data
-    print("test accuracy %g" % accuracy.eval(
+    logger.info("test accuracy %g" % accuracy.eval(
         feed_dict={model.train_data: test_dataset, label_data: test_labels}))
 
-    print("Training Time: %s seconds" % (time.time() - start_time))
+    logger.info("Training Time: %s seconds" % (time.time() - start_time))

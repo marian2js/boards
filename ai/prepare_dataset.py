@@ -1,6 +1,9 @@
 from scipy import misc
 from config import config
 from utils import image_utils
+from utils.logger import Logger
+
+logger = Logger('prepare_dataset')
 
 # Load dataset
 tasks_dataset = image_utils.load_model_images(config['task']['original_folder'])
@@ -29,20 +32,20 @@ outliers_dataset = outliers_dataset + backgrounds_dataset
 # Save tasks
 for i in range(len(tasks_dataset)):
     path = config['task']['folder'] + '/' + str(i) + '.jpg'
-    print('creating', path)
+    logger.info('creating %s' % path)
     image = image_utils.clean_shape(tasks_dataset[i])
     misc.imsave(path, image)
 
 # Save lists
 for i in range(len(lists_dataset)):
     path = config['list']['folder'] + '/' + str(i) + '.jpg'
-    print('creating', path)
+    logger.info('creating %s' % path)
     image = image_utils.clean_shape(lists_dataset[i])
     misc.imsave(path, image)
 
 # Save outliers
 for i in range(len(outliers_dataset)):
     path = config['outlier']['folder'] + '/' + str(i) + '.jpg'
-    print('creating', path)
+    logger.info('creating %s' % path)
     image = image_utils.clean_shape(outliers_dataset[i])
     misc.imsave(path, image)

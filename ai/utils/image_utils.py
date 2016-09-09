@@ -4,6 +4,9 @@ from scipy import ndimage
 from scipy import misc
 from skimage.draw import line_aa
 from config import config
+from utils.logger import Logger
+
+logger = Logger('image_utils')
 
 
 def load_model_images(folder, image_size=config['image_size'], max_images=0):
@@ -16,9 +19,9 @@ def load_model_images(folder, image_size=config['image_size'], max_images=0):
             image_file = os.path.join(folder, images[i])
             model_images.append(prepare_model_image(image_file, image_size))
             if i % 100 == 0:
-                print('Loading images... %d/%d' % (i, total_images))
+                logger.info('Loading images... %d/%d' % (i, total_images))
 
-    print('Loaded %d images' % len(model_images))
+    logger.info('Loaded %d images' % len(model_images))
 
     return model_images
 

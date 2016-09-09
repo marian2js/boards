@@ -2,6 +2,9 @@ import random
 from scipy import misc
 from config import config
 from utils import image_utils
+from utils.logger import Logger
+
+logger = Logger('generate')
 
 task_objects = image_utils.load_original_images(config['task']['objects_folder'])
 list_objects = image_utils.load_original_images(config['list']['objects_folder'])
@@ -26,11 +29,11 @@ for i in range(3000):
     background = random.choice(list_backgrounds)
     append_images(list_object, background, config['list']['generated_folder'] + '/' + str(i) + '.jpg')
     if i % 100 == 0:
-        print('Generated %d lists' % i)
+        logger.info('Generated %d lists' % i)
 
 for i in range(3000):
     task_object = random.choice(task_objects)
     background = random.choice(task_backgrounds)
     append_images(task_object, background, config['task']['generated_folder'] + '/' + str(i) + '.jpg')
     if i % 100 == 0:
-        print('Generated %d tasks' % i)
+        logger.info('Generated %d tasks' % i)

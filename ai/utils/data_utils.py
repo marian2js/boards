@@ -3,6 +3,9 @@ import math
 from config import config
 from utils import image_utils
 from utils import ocr_utils
+from utils.logger import Logger
+
+logger = Logger('data_utils')
 
 
 def classify_image(image_data, model, y_conv, sess):
@@ -16,7 +19,7 @@ def classify_image(image_data, model, y_conv, sess):
 
 def classify_with_window(image, zone_marks, resize, model, y_conv, sess):
     """Use a sliding window to classify multiple elements in the image"""
-    print('Classifying with %dx resize' % resize)
+    logger.info('Classifying with %dx resize' % resize)
 
     window_size = config['image_size']
     window_stride = 3
@@ -50,7 +53,7 @@ def classify_with_window(image, zone_marks, resize, model, y_conv, sess):
             window_image = image_data[y_offset:y_offset + window_size, x_offset:x_offset + window_size]
             prediction, confidence = classify_image(window_image, model, y_conv, sess)
             if (prediction == 0 or prediction == 1) and confidence > config['match_min_confidence']:
-                print('Confidence', confidence)
+                logger.debug('Prediction %d with confidence %f' % (prediction, confidence))
 
                 matches.append({
                     'type': prediction,

@@ -26,5 +26,6 @@ config = {
         'folder': './dataset/outliers'
     },
     'match_min_confidence': 0.8,
-    'match_max_shared_zone': 0.2
+    'match_max_shared_zone': 0.2,
+    'log_level': 'DEBUG'
 }
