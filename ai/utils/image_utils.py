@@ -39,13 +39,14 @@ def load_original_images(folder):
     for image in images:
         if not image.startswith('.'):
             image_file = os.path.join(folder, image)
-            dataset.append(read_image(image_file))
+            image_data = read_image(image_file)
+            dataset.append(image_data)
     return dataset
 
 
 def read_image(image_file):
     image_data = ndimage.imread(image_file, mode='L').astype(float)
-    return normalize_image(image_data)
+    return normalize_image(image_data), image_data
 
 
 def normalize_image(image_data):

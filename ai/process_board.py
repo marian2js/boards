@@ -34,16 +34,16 @@ def process_board(image_file):
 
         start_time = time.time()
 
-        image = image_utils.read_image(image_file)
-        lists, tasks = data_utils.locate_labels(image, model, y_conv, sess)
-        image = image_utils.clean_shape(image)
+        image_data, image = image_utils.read_image(image_file)
+        lists, tasks = data_utils.locate_labels(image_data, model, y_conv, sess)
+        image_data = image_utils.clean_shape(image_data)
 
         # Creates an image showing the matches
         for match in (lists + tasks):
-            image = image_utils.draw_border(image, match['zone'][0], match['zone'][2], match['zone'][1], match['zone'][3])
+            image_data = image_utils.draw_border(image_data, match['zone'][0], match['zone'][2], match['zone'][1], match['zone'][3])
         path = 'dataset/results.jpg'
         logger.debug('Saving results image on %s' % path)
-        misc.imsave(path, image)
+        misc.imsave(path, image_data)
 
         lists, tasks = data_utils.read_text(image, lists, tasks)
         lists = data_utils.group_by_list(lists, tasks)
