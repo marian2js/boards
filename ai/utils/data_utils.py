@@ -114,3 +114,17 @@ def read_text(image_data, lists, tasks):
         elem_image = image_data[elem['zone'][0]:elem['zone'][1], elem['zone'][2]:elem['zone'][3]]
         elem['text'] = ocr_utils.read_text(elem_image)
     return lists, tasks
+
+
+def prepare_response_data(lists):
+    for list in lists:
+        list.pop('zone', None)
+        list.pop('type', None)
+        list.pop('center_x', None)
+        list.pop('center_y', None)
+        for task in list['tasks']:
+            task.pop('zone', None)
+            task.pop('type', None)
+            task.pop('center_x', None)
+            task.pop('center_y', None)
+    return lists
