@@ -81,10 +81,12 @@ def locate_labels(image, model, y_conv, sess):
 
 
 def group_by_list(lists, tasks):
-    if len(lists) == 0:
-        return lists
     for elem in (lists + tasks):
         elem['center_x'] = (elem['zone'][3] - elem['zone'][2]) // 2 + elem['zone'][2]
+    if len(lists) == 0:
+        return [{
+            'tasks': tasks
+        }]
     for list in lists:
         list['tasks'] = []
     for task in tasks:
