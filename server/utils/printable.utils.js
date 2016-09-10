@@ -8,9 +8,14 @@ module.exports = {
    *
    * @returns {Promise}
    */
-  generatePrintableBoard(board, lists, tasks) {
+  generatePrintableBoard(board, lists, tasks, options = {}) {
     return this._getPrintableHTML(board, lists, tasks)
-      .then(html => this._htmlToPdf(html));
+      .then(html => {
+        if (options.format === 'html') {
+          return html;
+        }
+        return this._htmlToPdf(html);
+      });
   },
 
   /**

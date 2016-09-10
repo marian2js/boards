@@ -76,16 +76,25 @@ module.exports = {
     logger.debug(`Generating printable version of board "${req.board.name}"`);
 
     let data = {};
+    let options = {};
+
+    if (req.query && req.query.format) {
+      options.format = req.query.format;
+    }
+
     List.findByBoardId(req.board.id)
       .then(lists => {
         data.lists = lists;
         return Task.findByBoardId(req.board.id)
       })
       .then(tasks => {
-        return PrintableUtils.generatePrintableBoard(req.board, data.lists, tasks);
+        return PrintableUtils.generatePrintableBoard(req.board, data.lists, tasks, options);
       })
       .then(stream => {
         logger.info(`Printable version of board "${req.board.name}" generated`);
+        if (options.format === 'html') {
+          return res.send(stream);
+        }
         stream.pipe(res);
       })
       .catch(err => next(new BoardErrors.UnknownBoardError(err.message || err)));
