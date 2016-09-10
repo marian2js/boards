@@ -47,6 +47,7 @@ def process_board(image_file):
 
         lists, tasks = data_utils.read_text(image, lists, tasks)
         lists = data_utils.group_by_list(lists, tasks)
+        data_utils.sort_by_position(lists)
 
         logger.info('Found %d tasks and %d lists' % (len(tasks), len(lists)))
         logger.info("Prediction Time: %s seconds" % (time.time() - start_time))

@@ -83,6 +83,7 @@ def locate_labels(image, model, y_conv, sess):
 def group_by_list(lists, tasks):
     for elem in (lists + tasks):
         elem['center_x'] = (elem['zone'][3] - elem['zone'][2]) // 2 + elem['zone'][2]
+        elem['center_y'] = (elem['zone'][1] - elem['zone'][0]) // 2 + elem['zone'][0]
     if len(lists) == 0:
         return [{
             'tasks': tasks
@@ -98,6 +99,13 @@ def group_by_list(lists, tasks):
                 min_distance = distance
                 current_list = list
         current_list['tasks'].append(task)
+    return lists
+
+
+def sort_by_position(lists):
+    lists.sort(key=lambda e: e['center_x'] if 'center_x' in e else 0)
+    for list in lists:
+        list['tasks'].sort(key=lambda e: (e['center_y'], e['center_x']))
     return lists
 
 
