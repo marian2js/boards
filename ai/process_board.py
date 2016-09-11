@@ -3,6 +3,7 @@
 import tensorflow as tf
 import sys, getopt
 import time
+import json
 from scipy import misc
 from model import Model
 from config import config
@@ -51,7 +52,7 @@ def process_board(image_file):
         data_utils.prepare_response_data(lists)
 
         # Print the JSON response
-        print(lists)
+        print(json.dumps(lists))
 
         logger.info('Found %d tasks and %d lists' % (len(tasks), len(lists)))
         logger.info("Prediction Time: %s seconds" % (time.time() - start_time))
