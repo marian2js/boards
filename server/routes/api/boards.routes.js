@@ -12,5 +12,6 @@ router.get('/:boardId/lists', boardsController.getBoardLists);
 router.get('/:boardId/tasks', boardsController.getBoardTasks);
 
 router.get('/:boardId/export/printable', boardsController.exportPrintableBoard);
+router.post('/:boardId/import/printable', boardsController.importPrintableBoard);
 
 module.exports = router;

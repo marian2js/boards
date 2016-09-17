@@ -82,6 +82,19 @@ TaskSchema.methods.setEditableData = function (data) {
 };
 
 /**
+ * Update a task with raw data
+ */
+TaskSchema.methods.updateWithData = function (data, index) {
+  if (!this.name && data.text) {
+    this.name = data.text;
+  }
+  this.list = data.list;
+  this.position = index;
+  this.skip_position_validation = true;
+  return this.save();
+};
+
+/**
  * Find the tasks of a board
  */
 TaskSchema.statics.findByBoardId = function (boardId) {
@@ -114,10 +127,50 @@ TaskSchema.statics.verifyPermissions = function (taskId, userId) {
 };
 
 /**
+ * Create or update multiple tasks with raw data
+ */
+TaskSchema.statics.createOrUpdateTasks = function (board, newTasks) {
+  return this.findByBoardId(board)
+    .then(tasks => {
+      let promises = [];
+
+      // Filter tasks without name or list
+      newTasks = newTasks.filter(t => t.text && t.list);
+
+      // Find match by name
+      tasks.forEach((task, i) => {
+        let pos = newTasks.findIndex(l => l.text === task.name);
+        if (pos !== -1) {
+          promises.push(task.updateWithData(newTasks[pos], i));
+          newTasks.splice(pos, 1);
+          task.found = true;
+        }
+      });
+
+      // Add new tasks
+      newTasks.forEach((nt, i) => {
+        let task = new Task();
+        task.board = board.id;
+        task.list = nt.list;
+        task.name = nt.text;
+        task.position = tasks.length + i;
+        task.tasks = nt.tasks;
+        task.skip_position_validation = true;
+        promises.push(task.save());
+      });
+
+      return Promise.all(promises);
+    });
+};
+
+/**
  * [Pre Save Hook]
  * Validate that the position is between 0 and the count of tasks in the list
  */
 TaskSchema.pre('save', function (next) {
+  if (this.skip_position_validation) {
+    return next();
+  }
   let countQuery = {
     list: this.list
   };
@@ -132,6 +185,9 @@ TaskSchema.pre('save', function (next) {
  * Update the positions of the other tasks when a task is added or moved on the same list
  */
 TaskSchema.pre('save', function (next) {
+  if (this.skip_position_validation) {
+    return next();
+  }
   // If the change is between lists, nothing to do here
   if (!this.isNew && this.list.toString() !== this._oldList.toString()) {
     return next();
@@ -149,6 +205,9 @@ TaskSchema.pre('save', function (next) {
  * Update the positions of the other tasks when a task is moved between lists
  */
 TaskSchema.pre('save', function (next) {
+  if (this.skip_position_validation) {
+    return next();
+  }
   if (this.isNew || this.list.toString() === this._oldList.toString()) {
     return next();
   }
@@ -180,6 +239,9 @@ TaskSchema.pre('save', function (next) {
  * Update the positions of the following tasks in the list
  */
 TaskSchema.post('remove', function (next) {
+  if (this.skip_position_validation) {
+    return next();
+  }
   let updateQuery = {
     list: this.list
   };

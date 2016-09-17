@@ -66,6 +66,19 @@ ListSchema.methods.setEditableData = function (data) {
 };
 
 /**
+ * Update a list with raw data
+ */
+ListSchema.methods.updateWithData = function (data, index) {
+  if (!this.name && data.text) {
+    this.name = data.text;
+  }
+  this.position = index;
+  this.tasks = data.tasks;
+  this.skip_position_validation = true;
+  return this.save();
+};
+
+/**
  * Find the lists of a board
  */
 ListSchema.statics.findByBoardId = function (boardId) {
@@ -97,10 +110,72 @@ ListSchema.statics.verifyPermissions = function (listId, userId) {
 };
 
 /**
+ * Create or update multiple lists with raw data
+ */
+ListSchema.statics.createOrUpdateLists = function (board, newLists) {
+  return this.findByBoardId(board.id)
+    .then(lists => {
+      let promises = [];
+
+      newLists.forEach((nl, i) => {
+        nl.text = nl.text || `List ${i + 1}`;
+        nl.index = i;
+      });
+
+      // Find match by name
+      lists.forEach((list, i) => {
+        let pos = newLists.findIndex(l => l.text === list.name);
+        if (pos !== -1) {
+          promises.push(list.updateWithData(newLists[pos], i));
+          newLists.splice(pos, 1);
+          list.found = true;
+        }
+      });
+
+      // Find match by position
+      lists.forEach((list, i) => {
+        if (!list.found) {
+          let pos = newLists.findIndex(l => l.index === i);
+          if (pos !== -1) {
+            promises.push(list.updateWithData(newLists[pos], i));
+            newLists.splice(pos, 1);
+          }
+        }
+      });
+
+      // Add new lists
+      newLists.forEach((nl, i) => {
+        let list = new List();
+        list.board = board.id;
+        list.name = nl.text;
+        list.position = lists.length + i;
+        list.tasks = nl.tasks;
+        list.skip_position_validation = true;
+        promises.push(list.save());
+      });
+
+      return Promise.all(promises);
+    })
+    .then(lists => {
+      let data = {};
+      data.tasks = [];
+      lists.forEach(list => {
+        list.tasks.forEach(t => t.list = list.id);
+        data.tasks = data.tasks.concat(list.tasks);
+      });
+      data.lists = lists;
+      return data;
+    });
+};
+
+/**
  * [Pre Save Hook]
  * Validate that the position is between 0 and the count of lists in the board
  */
 ListSchema.pre('save', function (next) {
+  if (this.skip_position_validation) {
+    return next();
+  }
   let countQuery = {
     board: this.board
   };
@@ -114,6 +189,9 @@ ListSchema.pre('save', function (next) {
  * Update the positions of the lists in the board
  */
 ListSchema.pre('save', function (next) {
+  if (this.skip_position_validation) {
+    return next();
+  }
   let updateQuery = {
     board: this.board
   };
@@ -127,6 +205,9 @@ ListSchema.pre('save', function (next) {
  * Update the positions of the following lists in the board
  */
 ListSchema.post('remove', function (next) {
+  if (this.skip_position_validation) {
+    return next();
+  }
   let updateQuery = {
     board: this.board
   };

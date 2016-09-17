@@ -9,6 +9,15 @@ class BoardNotFoundError extends RequestError {
 
 }
 
+class FieldRequiredError extends RequestError {
+
+  constructor(field) {
+    super(`${field} is required`);
+    this.status = 500;
+  }
+
+}
+
 class UnknownBoardError extends RequestError {
 
   constructor() {
@@ -20,5 +29,6 @@ class UnknownBoardError extends RequestError {
 
 module.exports = {
   BoardNotFoundError,
+  FieldRequiredError,
   UnknownBoardError
 };
