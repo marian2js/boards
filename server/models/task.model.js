@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const _ = require('lodash');
 const List = require('models/list.model');
 const ModelUtils = require('utils/model.utils');
+const DataUtils = require('utils/data.utils');
 const TaskErrors = require('errors/task.errors');
 
 const TaskSchema = new mongoose.Schema({
@@ -139,7 +140,7 @@ TaskSchema.statics.createOrUpdateTasks = function (board, newTasks) {
 
       // Find match by name
       tasks.forEach((task, i) => {
-        let pos = newTasks.findIndex(l => l.text === task.name);
+        let pos = newTasks.findIndex(l => DataUtils.namesMatch(l.text, task.name));
         if (pos !== -1) {
           promises.push(task.updateWithData(newTasks[pos], i));
           newTasks.splice(pos, 1);

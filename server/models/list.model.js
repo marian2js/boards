@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const _ = require('lodash');
 const Board = require('models/board.model');
 const ModelUtils = require('utils/model.utils');
+const DataUtils = require('utils/data.utils');
 const ListErrors = require('errors/list.errors');
 
 const ListSchema = new mongoose.Schema({
@@ -124,7 +125,7 @@ ListSchema.statics.createOrUpdateLists = function (board, newLists) {
 
       // Find match by name
       lists.forEach((list, i) => {
-        let pos = newLists.findIndex(l => l.text === list.name);
+        let pos = newLists.findIndex(l => DataUtils.namesMatch(l.text, list.name));
         if (pos !== -1) {
           promises.push(list.updateWithData(newLists[pos], i));
           newLists.splice(pos, 1);
