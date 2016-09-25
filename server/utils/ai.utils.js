@@ -1,6 +1,6 @@
 const exec = require('child_process').exec;
 const List = require('models/list.model');
-const Task = require('models/task.model');
+const Item = require('models/item.model');
 
 module.exports = {
 
@@ -13,10 +13,10 @@ module.exports = {
       .then(lists => List.createOrUpdateLists(board, lists))
       .then(_data => {
         data = _data;
-        return Task.createOrUpdateTasks(board, data.tasks);
+        return Item.createOrUpdateItems(board, data.items);
       })
-      .then(tasks => {
-        data.tasks = tasks;
+      .then(items => {
+        data.items = items;
         return data;
       });
   },

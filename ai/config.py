@@ -6,11 +6,11 @@ config = {
     'image_size': 28,
     'image_channels': 1,
     'test_dataset_percentage': 0.05,
-    'task': {
-        'original_folder': './dataset/tasks_original',
-        'objects_folder': './dataset/task_objects',
-        'generated_folder': './dataset/tasks_generated',
-        'folder': './dataset/tasks'
+    'item': {
+        'original_folder': './dataset/items_original',
+        'objects_folder': './dataset/item_objects',
+        'generated_folder': './dataset/items_generated',
+        'folder': './dataset/items'
     },
     'list': {
         'original_folder': './dataset/lists_original',

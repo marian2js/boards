@@ -1,15 +1,15 @@
 const RequestError = require('./req.errors').RequestError;
 
-class TaskNotFoundError extends RequestError {
+class ItemNotFoundError extends RequestError {
 
   constructor(message) {
-    super(`Task with ID "${message}" not found`);
+    super(`Item with ID "${message}" not found`);
     this.status = 404;
   }
 
 }
 
-class UnknownTaskError extends RequestError {
+class UnknownItemError extends RequestError {
 
   constructor(message) {
     super(message || 'An unknown error was produced');
@@ -19,6 +19,6 @@ class UnknownTaskError extends RequestError {
 }
 
 module.exports = {
-  TaskNotFoundError,
-  UnknownTaskError
+  ItemNotFoundError,
+  UnknownItemError
 };

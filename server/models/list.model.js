@@ -74,7 +74,7 @@ ListSchema.methods.updateWithData = function (data, index) {
     this.name = data.text;
   }
   this.position = index;
-  this.tasks = data.tasks;
+  this.items = data.items;
   this.skip_position_validation = true;
   return this.save();
 };
@@ -150,7 +150,7 @@ ListSchema.statics.createOrUpdateLists = function (board, newLists) {
         list.board = board.id;
         list.name = nl.text;
         list.position = lists.length + i;
-        list.tasks = nl.tasks;
+        list.items = nl.items;
         list.skip_position_validation = true;
         promises.push(list.save());
       });
@@ -159,10 +159,10 @@ ListSchema.statics.createOrUpdateLists = function (board, newLists) {
     })
     .then(lists => {
       let data = {};
-      data.tasks = [];
+      data.items = [];
       lists.forEach(list => {
-        list.tasks.forEach(t => t.list = list.id);
-        data.tasks = data.tasks.concat(list.tasks);
+        list.items.forEach(t => t.list = list.id);
+        data.items = data.items.concat(list.items);
       });
       data.lists = lists;
       return data;

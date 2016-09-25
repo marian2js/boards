@@ -2,7 +2,7 @@ const path = require('path');
 const formidable = require('formidable');
 const Board = require('models/board.model');
 const List = require('models/list.model');
-const Task = require('models/task.model');
+const Item = require('models/item.model');
 const PrintableUtils = require('utils/printable.utils');
 const AIUtils = require('utils/ai.utils');
 const BoardErrors = require('errors/board.errors');
@@ -61,13 +61,13 @@ module.exports = {
   },
 
   /**
-   * Get all the tasks of a board
+   * Get all the items of a board
    */
-  getBoardTasks(req, res, next) {
-    Task.findByBoardId(req.board.id)
-      .then(tasks => {
-        let tasksData = tasks.map(list => list.getReadableData());
-        res.send(tasksData);
+  getBoardItems(req, res, next) {
+    Item.findByBoardId(req.board.id)
+      .then(items => {
+        let itemsData = items.map(list => list.getReadableData());
+        res.send(itemsData);
       })
       .catch(err => next(new BoardErrors.UnknownBoardError(err.message || err)));
   },
@@ -88,10 +88,10 @@ module.exports = {
     List.findByBoardId(req.board.id)
       .then(lists => {
         data.lists = lists;
-        return Task.findByBoardId(req.board.id)
+        return Item.findByBoardId(req.board.id)
       })
-      .then(tasks => {
-        return PrintableUtils.generatePrintableBoard(req.board, data.lists, tasks, options);
+      .then(items => {
+        return PrintableUtils.generatePrintableBoard(req.board, data.lists, items, options);
       })
       .then(stream => {
         logger.info(`Printable version of board "${req.board.name}" generated`);
@@ -107,6 +107,8 @@ module.exports = {
    * Import a printed image of a board
    */
   importPrintableBoard(req, res, next) {
+    logger.debug(`Importing image of board "${req.board.name}"`);
+
     let form = new formidable.IncomingForm();
     form.parse(req, (err, field, file) => {
       if (err) {
@@ -120,10 +122,10 @@ module.exports = {
         .then(() => List.findByBoardId(req.board.id))
         .then(lists => {
           data.lists = lists.map(list => list.getReadableData());
-          return Task.findByBoardId(req.board.id);
+          return Item.findByBoardId(req.board.id);
         })
-        .then(tasks => {
-          data.tasks = tasks.map(task => task.getReadableData());
+        .then(items => {
+          data.items = items.map(item => item.getReadableData());
           res.send(data);
         })
         .catch(err => next(new BoardErrors.UnknownBoardError(err.message || err)));

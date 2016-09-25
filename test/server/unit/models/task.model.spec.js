@@ -3,84 +3,84 @@ const mockgoose = require('mockgoose');
 const User = require('models/user.model');
 const Board = require('models/board.model');
 const List = require('models/list.model');
-const Task = require('models/task.model');
-const TaskErrors = require('errors/task.errors');
+const Item = require('models/item.model');
+const ItemErrors = require('errors/item.errors');
 const TestUtils  = require('../test.utils');
 
-describe('Task Model', () => {
+describe('Item Model', () => {
   // Mock DataBase
   beforeAll(TestUtils.mockDb);
 
   beforeEach(done => mockgoose.reset(() => done()));
 
-  let task;
-  let createTask = (props = {}) => {
+  let item;
+  let createItem = (props = {}) => {
     const defaults = {
-      name: 'Test Task',
+      name: 'Test Item',
       board: new Board(),
       list: new List(),
       position: 0
     };
-    task = new Task(Object.assign(defaults, props));
-    return task.save();
+    item = new Item(Object.assign(defaults, props));
+    return item.save();
   };
 
-  // Ensure task is cleaned after each test
-  afterEach(() => task = undefined);
+  // Ensure item is cleaned after each test
+  afterEach(() => item = undefined);
 
   describe('Constructor', () => {
-    it('should create a task with defaults', done => {
-      createTask()
+    it('should create a item with defaults', done => {
+      createItem()
         .then(() => {
-          expect(task.id).toBe(task._id.toString());
-          expect(task.board).toBeDefined();
-          expect(task.list).toBeDefined();
-          expect(task.name).toBe('Test Task');
-          expect(task.position).toBe(0);
-          expect(task.created_at).toEqual(jasmine.any(Date));
+          expect(item.id).toBe(item._id.toString());
+          expect(item.board).toBeDefined();
+          expect(item.list).toBeDefined();
+          expect(item.name).toBe('Test Item');
+          expect(item.position).toBe(0);
+          expect(item.created_at).toEqual(jasmine.any(Date));
           done();
         })
         .catch(err => done.fail(err));
     });
 
-    it('should fail if the task doesn\'t have a name', done => {
+    it('should fail if the item doesn\'t have a name', done => {
       let data = {
         name: null
       };
-      createTask(data)
+      createItem(data)
         .catch(err => {
           expect(err.errors.name.message).toBe('Path `name` is required.');
           done();
         });
     });
 
-    it('should fail if the task doesn\'t have a board', done => {
+    it('should fail if the item doesn\'t have a board', done => {
       let data = {
         board: null
       };
-      createTask(data)
+      createItem(data)
         .catch(err => {
           expect(err.errors.board.message).toBe('Path `board` is required.');
           done();
         });
     });
 
-    it('should fail if the task doesn\'t have a board', done => {
+    it('should fail if the item doesn\'t have a board', done => {
       let data = {
         list: null
       };
-      createTask(data)
+      createItem(data)
         .catch(err => {
           expect(err.errors.list.message).toBe('Path `list` is required.');
           done();
         });
     });
 
-    it('should fail if the task doesn\'t have a position', done => {
+    it('should fail if the item doesn\'t have a position', done => {
       let data = {
         position: null
       };
-      createTask(data)
+      createItem(data)
         .catch(err => {
           expect(err.errors.position.message).toBe('Path `position` is required.');
           done();
@@ -99,32 +99,32 @@ describe('Task Model', () => {
         _id: new mongoose.Types.ObjectId()
       });
       let promises = [
-        createTask({ name: 'Task 1', board: board1 }),
-        createTask({ name: 'Task 2', board: board1 }),
-        createTask({ name: 'Task 3', board: board2 })
+        createItem({ name: 'Item 1', board: board1 }),
+        createItem({ name: 'Item 2', board: board1 }),
+        createItem({ name: 'Item 3', board: board2 })
       ];
       Promise.all(promises)
         .then(done);
     });
 
-    it('should find all the tasks of one board', done => {
-      Task.findByBoardId(board1._id)
-        .then(tasks => {
-          expect(tasks.length).toBe(2);
-          let taskNames = tasks.map(task => task.name);
-          expect(taskNames.includes('Task 1')).toBe(true);
-          expect(taskNames.includes('Task 2')).toBe(true);
-          expect(taskNames.includes('Task 3')).toBe(false);
+    it('should find all the items of one board', done => {
+      Item.findByBoardId(board1._id)
+        .then(items => {
+          expect(items.length).toBe(2);
+          let itemNames = items.map(item => item.name);
+          expect(itemNames.includes('Item 1')).toBe(true);
+          expect(itemNames.includes('Item 2')).toBe(true);
+          expect(itemNames.includes('Item 3')).toBe(false);
           done();
         })
         .catch(err => done.fail(err));
     });
 
-    it('should return an empty array if the board doesn\'t have tasks', done => {
+    it('should return an empty array if the board doesn\'t have items', done => {
       let boardId = new mongoose.Types.ObjectId();
-      Task.findByBoardId(boardId)
-        .then(tasks => {
-          expect(tasks.length).toBe(0);
+      Item.findByBoardId(boardId)
+        .then(items => {
+          expect(items.length).toBe(0);
           done();
         })
         .catch(err => done.fail(err));
@@ -140,27 +140,27 @@ describe('Task Model', () => {
 
     beforeEach(done => {
       user = new User();
-      createTask({ user })
+      createItem({ user })
         .then(done);
     });
 
-    it('should return the matching task', done => {
-      Task.verifyPermissions(task.id, user.id)
+    it('should return the matching item', done => {
+      Item.verifyPermissions(item.id, user.id)
         .then(data => {
-          expect(data.task).toBeDefined();
-          expect(data.task.id).toEqual(task.id);
-          expect(List.verifyPermissions).toHaveBeenCalledWith(data.task.list, user.id);
+          expect(data.item).toBeDefined();
+          expect(data.item.id).toEqual(item.id);
+          expect(List.verifyPermissions).toHaveBeenCalledWith(data.item.list, user.id);
           done();
         })
         .catch(err => done.fail(err));
     });
 
-    it('should throw an error if the task id doesn\'t exist', done => {
-      let taskId = new mongoose.Types.ObjectId();
-      Task.verifyPermissions(taskId, user.id)
+    it('should throw an error if the item id doesn\'t exist', done => {
+      let itemId = new mongoose.Types.ObjectId();
+      Item.verifyPermissions(itemId, user.id)
         .catch(err => {
           expect(List.verifyPermissions).not.toHaveBeenCalled();
-          expect(err instanceof TaskErrors.TaskNotFoundError).toBe(true);
+          expect(err instanceof ItemErrors.ItemNotFoundError).toBe(true);
           done();
         });
     });

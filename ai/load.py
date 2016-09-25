@@ -7,19 +7,19 @@ from utils.logger import Logger
 
 logger = Logger('load')
 
-tasks_train_dataset = image_utils.load_model_images(config['task']['folder'])
+items_train_dataset = image_utils.load_model_images(config['item']['folder'])
 lists_train_dataset = image_utils.load_model_images(config['list']['folder'])
 outliers_train_dataset = image_utils.load_model_images(config['outlier']['folder'])
 labels = []
 
-for i in range(len(tasks_train_dataset)):
+for i in range(len(items_train_dataset)):
     labels.append(0)
 for i in range(len(lists_train_dataset)):
     labels.append(1)
 for i in range(len(outliers_train_dataset)):
     labels.append(2)
 
-dataset = tasks_train_dataset + lists_train_dataset + outliers_train_dataset
+dataset = items_train_dataset + lists_train_dataset + outliers_train_dataset
 
 # Shuffle dataset
 list1_shuf = []

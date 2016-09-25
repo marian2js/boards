@@ -3,9 +3,9 @@ const _ = require('lodash');
 const List = require('models/list.model');
 const ModelUtils = require('utils/model.utils');
 const DataUtils = require('utils/data.utils');
-const TaskErrors = require('errors/task.errors');
+const ItemErrors = require('errors/item.errors');
 
-const TaskSchema = new mongoose.Schema({
+const ItemSchema = new mongoose.Schema({
   board: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Board',
@@ -45,7 +45,7 @@ const TaskSchema = new mongoose.Schema({
   }
 });
 
-TaskSchema
+ItemSchema
   .virtual('id')
   .get(function() {
     return this._id.toString();
@@ -54,7 +54,7 @@ TaskSchema
 /**
  * Returns the data that can be sent to the client
  */
-TaskSchema.methods.getReadableData = function () {
+ItemSchema.methods.getReadableData = function () {
   return {
     id: this.id,
     board: this.board,
@@ -69,7 +69,7 @@ TaskSchema.methods.getReadableData = function () {
 /**
  * Sets only the data that can be edited by the users
  */
-TaskSchema.methods.setEditableData = function (data) {
+ItemSchema.methods.setEditableData = function (data) {
   let editableKeys = [
     'list',
     'name',
@@ -83,9 +83,9 @@ TaskSchema.methods.setEditableData = function (data) {
 };
 
 /**
- * Update a task with raw data
+ * Update an item with raw data
  */
-TaskSchema.methods.updateWithData = function (data, index) {
+ItemSchema.methods.updateWithData = function (data, index) {
   if (!this.name && data.text) {
     this.name = data.text;
   }
@@ -96,9 +96,9 @@ TaskSchema.methods.updateWithData = function (data, index) {
 };
 
 /**
- * Find the tasks of a board
+ * Find the items of a board
  */
-TaskSchema.statics.findByBoardId = function (boardId) {
+ItemSchema.statics.findByBoardId = function (boardId) {
   let query = {
     board: boardId
   };
@@ -112,52 +112,52 @@ TaskSchema.statics.findByBoardId = function (boardId) {
 };
 
 /**
- * Finds a task by ID only if the user has permissions to use it
+ * Finds an item by ID only if the user has permissions to use it
  */
-TaskSchema.statics.verifyPermissions = function (taskId, userId) {
+ItemSchema.statics.verifyPermissions = function (itemId, userId) {
   let data = {};
-  return this.findById(taskId)
-    .then(task => {
-      if (!task) {
-        throw new TaskErrors.TaskNotFoundError(taskId);
+  return this.findById(itemId)
+    .then(item => {
+      if (!item) {
+        throw new ItemErrors.ItemNotFoundError(itemId);
       }
-      data.task = task;
-      return List.verifyPermissions(task.list, userId);
+      data.item = item;
+      return List.verifyPermissions(item.list, userId);
     })
     .then(listData => Object.assign(data, listData));
 };
 
 /**
- * Create or update multiple tasks with raw data
+ * Create or update multiple items with raw data
  */
-TaskSchema.statics.createOrUpdateTasks = function (board, newTasks) {
+ItemSchema.statics.createOrUpdateItems = function (board, newItems) {
   return this.findByBoardId(board)
-    .then(tasks => {
+    .then(items => {
       let promises = [];
 
-      // Filter tasks without name or list
-      newTasks = newTasks.filter(t => t.text && t.list);
+      // Filter items without name or list
+      newItems = newItems.filter(t => t.text && t.list);
 
       // Find match by name
-      tasks.forEach((task, i) => {
-        let pos = newTasks.findIndex(l => DataUtils.namesMatch(l.text, task.name));
+      items.forEach((item, i) => {
+        let pos = newItems.findIndex(l => DataUtils.namesMatch(l.text, item.name));
         if (pos !== -1) {
-          promises.push(task.updateWithData(newTasks[pos], i));
-          newTasks.splice(pos, 1);
-          task.found = true;
+          promises.push(item.updateWithData(newItems[pos], i));
+          newItems.splice(pos, 1);
+          item.found = true;
         }
       });
 
-      // Add new tasks
-      newTasks.forEach((nt, i) => {
-        let task = new Task();
-        task.board = board.id;
-        task.list = nt.list;
-        task.name = nt.text;
-        task.position = tasks.length + i;
-        task.tasks = nt.tasks;
-        task.skip_position_validation = true;
-        promises.push(task.save());
+      // Add new items
+      newItems.forEach((nt, i) => {
+        let item = new Item();
+        item.board = board.id;
+        item.list = nt.list;
+        item.name = nt.text;
+        item.position = items.length + i;
+        item.items = nt.items;
+        item.skip_position_validation = true;
+        promises.push(item.save());
       });
 
       return Promise.all(promises);
@@ -166,9 +166,9 @@ TaskSchema.statics.createOrUpdateTasks = function (board, newTasks) {
 
 /**
  * [Pre Save Hook]
- * Validate that the position is between 0 and the count of tasks in the list
+ * Validate that the position is between 0 and the count of items in the list
  */
-TaskSchema.pre('save', function (next) {
+ItemSchema.pre('save', function (next) {
   if (this.skip_position_validation) {
     return next();
   }
@@ -176,16 +176,16 @@ TaskSchema.pre('save', function (next) {
     list: this.list
   };
   let isNew = this.isNew || this.list.toString() !== this._oldList.toString();
-  ModelUtils.validatePosition(Task, this.position, this._oldPosition, isNew, countQuery)
+  ModelUtils.validatePosition(Item, this.position, this._oldPosition, isNew, countQuery)
     .then(() => next())
     .catch(next);
 });
 
 /**
  * [Pre Save Hook]
- * Update the positions of the other tasks when a task is added or moved on the same list
+ * Update the positions of the other items when an item is added or moved on the same list
  */
-TaskSchema.pre('save', function (next) {
+ItemSchema.pre('save', function (next) {
   if (this.skip_position_validation) {
     return next();
   }
@@ -196,16 +196,16 @@ TaskSchema.pre('save', function (next) {
   let updateQuery = {
     list: this.list
   };
-  ModelUtils.updatePositions(Task, this.position, this._oldPosition, updateQuery)
+  ModelUtils.updatePositions(Item, this.position, this._oldPosition, updateQuery)
     .then(() => next())
     .catch(next);
 });
 
 /**
  * [Pre Save Hook]
- * Update the positions of the other tasks when a task is moved between lists
+ * Update the positions of the other items when an item is moved between lists
  */
-TaskSchema.pre('save', function (next) {
+ItemSchema.pre('save', function (next) {
   if (this.skip_position_validation) {
     return next();
   }
@@ -224,12 +224,12 @@ TaskSchema.pre('save', function (next) {
   }
 
   // update positions on the old list
-  ModelUtils.updatePositions(Task, this._oldPosition, -1, updateQuery)
+  ModelUtils.updatePositions(Item, this._oldPosition, -1, updateQuery)
     .then(() => {
       updateQuery.list = this.list;
 
       // update positions on the new list
-      return ModelUtils.updatePositions(Task, this.position, null, updateQuery);
+      return ModelUtils.updatePositions(Item, this.position, null, updateQuery);
     })
     .then(() => next())
     .catch(next);
@@ -237,19 +237,19 @@ TaskSchema.pre('save', function (next) {
 
 /**
  * [Post Remove Hook]
- * Update the positions of the following tasks in the list
+ * Update the positions of the following items in the list
  */
-TaskSchema.post('remove', function (next) {
+ItemSchema.post('remove', function (next) {
   if (this.skip_position_validation) {
     return next();
   }
   let updateQuery = {
     list: this.list
   };
-  ModelUtils.updatePositions(Task, this.position, -1, updateQuery)
+  ModelUtils.updatePositions(Item, this.position, -1, updateQuery)
     .then(() => next())
     .catch(next);
 });
 
-const Task = mongoose.model('tasks', TaskSchema);
-module.exports = Task;
+const Item = mongoose.model('items', ItemSchema);
+module.exports = Item;

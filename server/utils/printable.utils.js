@@ -8,8 +8,8 @@ module.exports = {
    *
    * @returns {Promise}
    */
-  generatePrintableBoard(board, lists, tasks, options = {}) {
-    return this._getPrintableHTML(board, lists, tasks)
+  generatePrintableBoard(board, lists, items, options = {}) {
+    return this._getPrintableHTML(board, lists, items)
       .then(html => {
         if (options.format === 'html') {
           return html;
@@ -24,13 +24,13 @@ module.exports = {
    * @returns {Promise}
    * @private
    */
-  _getPrintableHTML(board, lists, tasks) {
+  _getPrintableHTML(board, lists, items) {
     return new Promise((resolve, reject) => {
       let filename = './server/views/export/printable.ejs';
       let data = {
         board,
         lists,
-        tasks
+        items
       };
       let options = {};
       ejs.renderFile(filename, data, options, (err, html) => {

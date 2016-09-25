@@ -6,10 +6,10 @@ from utils.logger import Logger
 
 logger = Logger('generate')
 
-task_objects = image_utils.load_original_images(config['task']['objects_folder'])
+item_objects = image_utils.load_original_images(config['item']['objects_folder'])
 list_objects = image_utils.load_original_images(config['list']['objects_folder'])
 list_backgrounds = image_utils.load_model_images(config['backgrounds']['original_folder'], image_size=1100)
-task_backgrounds = image_utils.load_model_images(config['backgrounds']['original_folder'], image_size=420)
+item_backgrounds = image_utils.load_model_images(config['backgrounds']['original_folder'], image_size=420)
 
 
 def append_images(object_image, background, dest):
@@ -32,8 +32,8 @@ for i in range(3000):
         logger.info('Generated %d lists' % i)
 
 for i in range(3000):
-    task_object = random.choice(task_objects)
-    background = random.choice(task_backgrounds)
-    append_images(task_object, background, config['task']['generated_folder'] + '/' + str(i) + '.jpg')
+    item_object = random.choice(item_objects)
+    background = random.choice(item_backgrounds)
+    append_images(item_object, background, config['item']['generated_folder'] + '/' + str(i) + '.jpg')
     if i % 100 == 0:
-        logger.info('Generated %d tasks' % i)
+        logger.info('Generated %d items' % i)

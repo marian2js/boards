@@ -12,7 +12,7 @@
       clear: both;
     }
 
-    .item {
+    .element {
       width: 48%;
       margin: 0 1% 1% 0;
       float: left;
@@ -28,7 +28,7 @@
       border: 5px dashed #000;
     }
 
-    .task {
+    .item {
       height: 250px;
       padding: 20px;
       border: 5px solid #000;
@@ -43,19 +43,19 @@
       <div class="break"></div>
       <% e = 0%>
     <% } %>
-    <div class="item list"><%= lists[i].name %></div>
+    <div class="element list"><%= lists[i].name %></div>
     <% e++ %>
   <% } %>
 
   <% e+= 2 %>
   <div class="clear"></div>
 
-  <% for (let i = 0; i < tasks.length; i++) { %>
+  <% for (let i = 0; i < items.length; i++) { %>
     <% if (e > 20 && i % 2 === 0) { %>
       <div class="clear break"></div>
       <% e = 0%>
     <% } %>
-    <div class="item task"><%= tasks[i].name %></div>
+    <div class="element item"><%= items[i].name %></div>
     <% e += 5 %>
   <% } %>
 </body>

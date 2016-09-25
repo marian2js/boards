@@ -8,6 +8,6 @@ router.use(userController.validateAuth);
 router.use('/users', require('./api/users.routes'));
 router.use('/boards', require('./api/boards.routes'));
 router.use('/lists', require('./api/lists.routes'));
-router.use('/tasks', require('./api/tasks.routes'));
+router.use('/items', require('./api/items.routes'));
 
 module.exports = router;
