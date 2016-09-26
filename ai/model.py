@@ -32,6 +32,7 @@ class Model:
         self.fc1_num_neurons = 1024
 
         self.train_data = None
+        self.keep_prob = None
 
     def prepare(self):
         self.train_data = tf.placeholder(tf.float32,
@@ -65,11 +66,14 @@ class Model:
         h_pool2_flat = tf.reshape(h_pool2, [-1, image_patch_size * image_patch_size * self.conv2_num_channels])
         h_fc1 = tf.nn.relu(tf.matmul(h_pool2_flat, fc1_weights) + fc1_biases)
 
+        # ------ Dropout ------ #
+
+        self.keep_prob = tf.placeholder(tf.float32)
+        h_fc1_drop = tf.nn.dropout(h_fc1, self.keep_prob)
+
         # ------ Readout Layer ------ #
 
         layer4_weights = weight_variable([self.fc1_num_neurons, self.num_labels])
         layer4_biases = bias_variable([self.num_labels])
 
-        return tf.nn.softmax(tf.matmul(h_fc1, layer4_weights) + layer4_biases)
-
-
+        return tf.nn.softmax(tf.matmul(h_fc1_drop, layer4_weights) + layer4_biases)

@@ -71,16 +71,16 @@ with tf.Session(graph=graph) as sess:
 
         if i % 100 == 0:
             train_accuracy = accuracy.eval(
-                feed_dict={model.train_data: batch_data, label_data: batch_labels})
+                feed_dict={model.train_data: batch_data, label_data: batch_labels, model.keep_prob: 1.0})
             logger.info("step %d, training accuracy %g" % (i, train_accuracy))
 
-        train_step.run(feed_dict={model.train_data: batch_data, label_data: batch_labels})
+        train_step.run(feed_dict={model.train_data: batch_data, label_data: batch_labels, model.keep_prob: 0.5})
 
     save_path = saver.save(sess, config['model_file'])
     logger.info("Model saved in file: %s" % save_path)
 
     # Evaluate test data
     logger.info("test accuracy %g" % accuracy.eval(
-        feed_dict={model.train_data: test_dataset, label_data: test_labels}))
+        feed_dict={model.train_data: test_dataset, label_data: test_labels, model.keep_prob: 1.0}))
 
     logger.info("Training Time: %s seconds" % (time.time() - start_time))

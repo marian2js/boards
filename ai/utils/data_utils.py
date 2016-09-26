@@ -10,7 +10,7 @@ logger = Logger('data_utils')
 
 def classify_image(image_data, model, y_conv, sess):
     """Classify an Image"""
-    result = y_conv.eval(feed_dict={model.train_data: [image_data]}, session=sess)
+    result = y_conv.eval(feed_dict={model.train_data: [image_data], model.keep_prob: 1.0}, session=sess)
     result = result[0]
     type = np.argmax(result)
     confidence = result[type]
