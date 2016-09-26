@@ -8,7 +8,7 @@ router.use(boardsController.verifyPermissions);
 router.get('/:boardId', boardsController.getBoardById);
 router.put('/:boardId', boardsController.updateBoardById);
 router.post('/', boardsController.createBoard);
-router.get('/:boardId/lists', boardsController.getBoardLists);
+router.get('/:boardId/relations', boardsController.getBoardRelations);
 router.get('/:boardId/items', boardsController.getBoardItems);
 
 router.get('/:boardId/export/printable', boardsController.exportPrintableBoard);

@@ -12,11 +12,11 @@ config = {
         'generated_folder': './dataset/items_generated',
         'folder': './dataset/items'
     },
-    'list': {
-        'original_folder': './dataset/lists_original',
-        'objects_folder': './dataset/list_objects',
-        'generated_folder': './dataset/lists_generated',
-        'folder': './dataset/lists'
+    'relation': {
+        'original_folder': './dataset/relations_original',
+        'objects_folder': './dataset/relation_objects',
+        'generated_folder': './dataset/relations_generated',
+        'folder': './dataset/relations'
     },
     'backgrounds': {
         'original_folder': './dataset/backgrounds'

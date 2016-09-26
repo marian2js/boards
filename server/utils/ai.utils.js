@@ -1,5 +1,5 @@
 const exec = require('child_process').exec;
-const List = require('models/list.model');
+const Relation = require('models/relation.model');
 const Item = require('models/item.model');
 
 module.exports = {
@@ -10,7 +10,7 @@ module.exports = {
   updateBoard(board, image) {
     let data;
     return this.processImage(image)
-      .then(lists => List.createOrUpdateLists(board, lists))
+      .then(relations => Relation.createOrUpdateRelations(board, relations))
       .then(_data => {
         data = _data;
         return Item.createOrUpdateItems(board, data.items);

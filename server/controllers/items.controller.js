@@ -1,4 +1,4 @@
-const List = require('models/list.model');
+const Relation = require('models/relation.model');
 const Item = require('models/item.model');
 const ItemErrors = require('errors/item.errors');
 const Logger = require('utils/logger');
@@ -61,15 +61,15 @@ module.exports = {
    * Verifies if the logged user has permissions to use the endpoint
    */
   verifyPermissions(req, res, next) {
-    let listId = req.body.list || req.query.list;
+    let relationId = req.body.relation || req.query.relation;
     let itemId = req.path.split('/')[1];
     let verifyPromise;
 
-    // Verify item and/or list permissions
+    // Verify item and/or relation permissions
     if (itemId) {
       verifyPromise = Item.verifyPermissions(itemId, req.user.id);
-    } else if (listId) {
-      verifyPromise = List.verifyPermissions(listId, req.user.id);
+    } else if (relationId) {
+      verifyPromise = Relation.verifyPermissions(relationId, req.user.id);
     } else {
       return next(new ItemErrors.UnknownItemError());
     }
@@ -77,7 +77,7 @@ module.exports = {
     verifyPromise
       .then(data => {
         req.board = data.board;
-        req.list = data.list;
+        req.relation = data.relation;
         req.item = data.item;
         next();
       })

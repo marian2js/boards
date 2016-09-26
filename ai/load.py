@@ -8,29 +8,29 @@ from utils.logger import Logger
 logger = Logger('load')
 
 items_train_dataset = image_utils.load_model_images(config['item']['folder'])
-lists_train_dataset = image_utils.load_model_images(config['list']['folder'])
+relations_train_dataset = image_utils.load_model_images(config['relation']['folder'])
 outliers_train_dataset = image_utils.load_model_images(config['outlier']['folder'])
 labels = []
 
 for i in range(len(items_train_dataset)):
     labels.append(0)
-for i in range(len(lists_train_dataset)):
+for i in range(len(relations_train_dataset)):
     labels.append(1)
 for i in range(len(outliers_train_dataset)):
     labels.append(2)
 
-dataset = items_train_dataset + lists_train_dataset + outliers_train_dataset
+dataset = items_train_dataset + relations_train_dataset + outliers_train_dataset
 
 # Shuffle dataset
-list1_shuf = []
-list2_shuf = []
+relation1_shuf = []
+relation2_shuf = []
 index_shuf = list(range(len(dataset)))
 shuffle(index_shuf)
 for i in index_shuf:
-    list1_shuf.append(dataset[i])
-    list2_shuf.append(labels[i])
-dataset = np.asarray(list1_shuf)
-labels = np.asarray(list2_shuf)
+    relation1_shuf.append(dataset[i])
+    relation2_shuf.append(labels[i])
+dataset = np.asarray(relation1_shuf)
+labels = np.asarray(relation2_shuf)
 
 dataset = dataset.reshape((-1, config['image_size'], config['image_size']))
 

@@ -36,25 +36,25 @@ def process_board(image_file):
         start_time = time.time()
 
         image_data, image = image_utils.read_image(image_file)
-        lists, items = data_utils.locate_labels(image_data, model, y_conv, sess)
+        relations, items = data_utils.locate_labels(image_data, model, y_conv, sess)
         image_data = image_utils.clean_shape(image_data)
 
         # Creates an image showing the matches
-        for match in (lists + items):
+        for match in (relations + items):
             image_data = image_utils.draw_border(image_data, match['zone'][0], match['zone'][2], match['zone'][1], match['zone'][3])
         path = 'dataset/results.jpg'
         logger.debug('Saving results image on %s' % path)
         misc.imsave(path, image_data)
 
-        lists, items = data_utils.read_text(image, lists, items)
-        lists = data_utils.group_by_list(lists, items)
-        data_utils.sort_by_position(lists)
-        data_utils.prepare_response_data(lists)
+        relations, items = data_utils.read_text(image, relations, items)
+        relations = data_utils.group_by_relation(relations, items)
+        data_utils.sort_by_position(relations)
+        data_utils.prepare_response_data(relations)
 
         # Print the JSON response
-        print(json.dumps(lists))
+        print(json.dumps(relations))
 
-        logger.info('Found %d items and %d lists' % (len(items), len(lists)))
+        logger.info('Found %d items and %d relations' % (len(items), len(relations)))
         logger.info("Prediction Time: %s seconds" % (time.time() - start_time))
 
 

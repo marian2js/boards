@@ -1,15 +1,15 @@
 const RequestError = require('./req.errors').RequestError;
 
-class ListNotFoundError extends RequestError {
+class RelationNotFoundError extends RequestError {
 
   constructor(message) {
-    super(`List with ID "${message}" not found`);
+    super(`Relation with ID "${message}" not found`);
     this.status = 404;
   }
 
 }
 
-class UnknownListError extends RequestError {
+class UnknownRelationError extends RequestError {
 
   constructor(message) {
     super(message || 'An unknown error was produced');
@@ -19,6 +19,6 @@ class UnknownListError extends RequestError {
 }
 
 module.exports = {
-  ListNotFoundError,
-  UnknownListError
+  RelationNotFoundError,
+  UnknownRelationError
 };

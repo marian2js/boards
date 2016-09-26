@@ -7,8 +7,8 @@ from utils.logger import Logger
 logger = Logger('generate')
 
 item_objects = image_utils.load_original_images(config['item']['objects_folder'])
-list_objects = image_utils.load_original_images(config['list']['objects_folder'])
-list_backgrounds = image_utils.load_model_images(config['backgrounds']['original_folder'], image_size=1100)
+relation_objects = image_utils.load_original_images(config['relation']['objects_folder'])
+relation_backgrounds = image_utils.load_model_images(config['backgrounds']['original_folder'], image_size=1100)
 item_backgrounds = image_utils.load_model_images(config['backgrounds']['original_folder'], image_size=420)
 
 
@@ -25,11 +25,11 @@ def append_images(object_image, background, dest):
     misc.imsave(dest, background)
 
 for i in range(3000):
-    list_object = random.choice(list_objects)
-    background = random.choice(list_backgrounds)
-    append_images(list_object, background, config['list']['generated_folder'] + '/' + str(i) + '.jpg')
+    relation_object = random.choice(relation_objects)
+    background = random.choice(relation_backgrounds)
+    append_images(relation_object, background, config['relation']['generated_folder'] + '/' + str(i) + '.jpg')
     if i % 100 == 0:
-        logger.info('Generated %d lists' % i)
+        logger.info('Generated %d relations' % i)
 
 for i in range(3000):
     item_object = random.choice(item_objects)

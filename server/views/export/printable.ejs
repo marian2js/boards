@@ -20,7 +20,7 @@
       overflow: hidden;
     }
 
-    .list {
+    .relation {
       text-align: center;
       height: 50px;
       padding: 10px 20px;
@@ -38,12 +38,12 @@
 <body>
   <% let e = 0; %>
 
-  <% for (let i = 0; i < lists.length; i++) { %>
+  <% for (let i = 0; i < relations.length; i++) { %>
     <% if (e > 20 && i % 2 === 0) { %>
       <div class="break"></div>
       <% e = 0%>
     <% } %>
-    <div class="element list"><%= lists[i].name %></div>
+    <div class="element relation"><%= relations[i].name %></div>
     <% e++ %>
   <% } %>
 

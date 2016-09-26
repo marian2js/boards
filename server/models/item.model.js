@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const _ = require('lodash');
-const List = require('models/list.model');
+const Relation = require('models/relation.model');
 const ModelUtils = require('utils/model.utils');
 const DataUtils = require('utils/data.utils');
 const ItemErrors = require('errors/item.errors');
@@ -12,15 +12,15 @@ const ItemSchema = new mongoose.Schema({
     required: true,
     index: true
   },
-  list: {
+  relation: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'List',
+    ref: 'Relation',
     required: true,
 
-    // if the list is changed, keep track of the old list
-    set: function(list) {
-      this._oldList = this.list;
-      return list;
+    // if the relation is changed, keep track of the old relation
+    set: function(relation) {
+      this._oldRelation = this.relation;
+      return relation;
     }
   },
   name: {
@@ -58,7 +58,7 @@ ItemSchema.methods.getReadableData = function () {
   return {
     id: this.id,
     board: this.board,
-    list: this.list,
+    relation: this.relation,
     name: this.name,
     description: this.description,
     position: this.position,
@@ -71,7 +71,7 @@ ItemSchema.methods.getReadableData = function () {
  */
 ItemSchema.methods.setEditableData = function (data) {
   let editableKeys = [
-    'list',
+    'relation',
     'name',
     'description',
     'position'
@@ -89,7 +89,7 @@ ItemSchema.methods.updateWithData = function (data, index) {
   if (!this.name && data.text) {
     this.name = data.text;
   }
-  this.list = data.list;
+  this.relation = data.relation;
   this.position = index;
   this.skip_position_validation = true;
   return this.save();
@@ -104,7 +104,7 @@ ItemSchema.statics.findByBoardId = function (boardId) {
   };
   let options = {
     sort: {
-      list: -1,
+      relation: -1,
       position: 1
     }
   };
@@ -122,9 +122,9 @@ ItemSchema.statics.verifyPermissions = function (itemId, userId) {
         throw new ItemErrors.ItemNotFoundError(itemId);
       }
       data.item = item;
-      return List.verifyPermissions(item.list, userId);
+      return Relation.verifyPermissions(item.relation, userId);
     })
-    .then(listData => Object.assign(data, listData));
+    .then(relationData => Object.assign(data, relationData));
 };
 
 /**
@@ -135,8 +135,8 @@ ItemSchema.statics.createOrUpdateItems = function (board, newItems) {
     .then(items => {
       let promises = [];
 
-      // Filter items without name or list
-      newItems = newItems.filter(t => t.text && t.list);
+      // Filter items without name or relation
+      newItems = newItems.filter(t => t.text && t.relation);
 
       // Find match by name
       items.forEach((item, i) => {
@@ -152,7 +152,7 @@ ItemSchema.statics.createOrUpdateItems = function (board, newItems) {
       newItems.forEach((nt, i) => {
         let item = new Item();
         item.board = board.id;
-        item.list = nt.list;
+        item.relation = nt.relation;
         item.name = nt.text;
         item.position = items.length + i;
         item.items = nt.items;
@@ -166,16 +166,16 @@ ItemSchema.statics.createOrUpdateItems = function (board, newItems) {
 
 /**
  * [Pre Save Hook]
- * Validate that the position is between 0 and the count of items in the list
+ * Validate that the position is between 0 and the count of items in the relation
  */
 ItemSchema.pre('save', function (next) {
   if (this.skip_position_validation) {
     return next();
   }
   let countQuery = {
-    list: this.list
+    relation: this.relation
   };
-  let isNew = this.isNew || this.list.toString() !== this._oldList.toString();
+  let isNew = this.isNew || this.relation.toString() !== this._oldRelation.toString();
   ModelUtils.validatePosition(Item, this.position, this._oldPosition, isNew, countQuery)
     .then(() => next())
     .catch(next);
@@ -183,18 +183,18 @@ ItemSchema.pre('save', function (next) {
 
 /**
  * [Pre Save Hook]
- * Update the positions of the other items when an item is added or moved on the same list
+ * Update the positions of the other items when an item is added or moved on the same relation
  */
 ItemSchema.pre('save', function (next) {
   if (this.skip_position_validation) {
     return next();
   }
-  // If the change is between lists, nothing to do here
-  if (!this.isNew && this.list.toString() !== this._oldList.toString()) {
+  // If the change is between relations, nothing to do here
+  if (!this.isNew && this.relation.toString() !== this._oldRelation.toString()) {
     return next();
   }
   let updateQuery = {
-    list: this.list
+    relation: this.relation
   };
   ModelUtils.updatePositions(Item, this.position, this._oldPosition, updateQuery)
     .then(() => next())
@@ -203,13 +203,13 @@ ItemSchema.pre('save', function (next) {
 
 /**
  * [Pre Save Hook]
- * Update the positions of the other items when an item is moved between lists
+ * Update the positions of the other items when an item is moved between relations
  */
 ItemSchema.pre('save', function (next) {
   if (this.skip_position_validation) {
     return next();
   }
-  if (this.isNew || this.list.toString() === this._oldList.toString()) {
+  if (this.isNew || this.relation.toString() === this._oldRelation.toString()) {
     return next();
   }
 
@@ -217,18 +217,18 @@ ItemSchema.pre('save', function (next) {
     _id: {
       $ne: this._id
     },
-    list: this._oldList
+    relation: this._oldRelation
   };
   if (_.isUndefined(this._oldPosition)) {
     this._oldPosition = this.position;
   }
 
-  // update positions on the old list
+  // update positions on the old relation
   ModelUtils.updatePositions(Item, this._oldPosition, -1, updateQuery)
     .then(() => {
-      updateQuery.list = this.list;
+      updateQuery.relation = this.relation;
 
-      // update positions on the new list
+      // update positions on the new relation
       return ModelUtils.updatePositions(Item, this.position, null, updateQuery);
     })
     .then(() => next())
@@ -237,14 +237,14 @@ ItemSchema.pre('save', function (next) {
 
 /**
  * [Post Remove Hook]
- * Update the positions of the following items in the list
+ * Update the positions of the following items in the relation
  */
 ItemSchema.post('remove', function (next) {
   if (this.skip_position_validation) {
     return next();
   }
   let updateQuery = {
-    list: this.list
+    relation: this.relation
   };
   ModelUtils.updatePositions(Item, this.position, -1, updateQuery)
     .then(() => next())

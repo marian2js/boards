@@ -74,57 +74,57 @@ def locate_labels(image, model, y_conv, sess):
     matches += classify_with_window(image, zone_marks, int(resize // pow(1.2, 4)), model, y_conv, sess)
     matches += classify_with_window(image, zone_marks, int(resize // pow(1.2, 5)), model, y_conv, sess)
 
-    lists = list(filter(lambda m: m['type'] == 1, matches))
+    relations = list(filter(lambda m: m['type'] == 1, matches))
     items = list(filter(lambda m: m['type'] == 0, matches))
 
-    return lists, items
+    return relations, items
 
 
-def group_by_list(lists, items):
-    for elem in (lists + items):
+def group_by_relation(relations, items):
+    for elem in (relations + items):
         elem['center_x'] = (elem['zone'][3] - elem['zone'][2]) // 2 + elem['zone'][2]
         elem['center_y'] = (elem['zone'][1] - elem['zone'][0]) // 2 + elem['zone'][0]
-    if len(lists) == 0:
+    if len(relations) == 0:
         return [{
             'items': items
         }]
-    for list in lists:
-        list['items'] = []
+    for relation in relations:
+        relation['items'] = []
     for item in items:
         min_distance = math.inf
-        current_list = None
-        for list in lists:
-            distance = abs(list['center_x'] - item['center_x'])
+        current_relation = None
+        for relation in relations:
+            distance = abs(relation['center_x'] - item['center_x'])
             if distance < min_distance:
                 min_distance = distance
-                current_list = list
-        current_list['items'].append(item)
-    return lists
+                current_relation = relation
+        current_relation['items'].append(item)
+    return relations
 
 
-def sort_by_position(lists):
-    lists.sort(key=lambda e: e['center_x'] if 'center_x' in e else 0)
-    for list in lists:
-        list['items'].sort(key=lambda e: (e['center_y'], e['center_x']))
-    return lists
+def sort_by_position(relations):
+    relations.sort(key=lambda e: e['center_x'] if 'center_x' in e else 0)
+    for relation in relations:
+        relation['items'].sort(key=lambda e: (e['center_y'], e['center_x']))
+    return relations
 
 
-def read_text(image_data, lists, items):
-    for elem in (lists + items):
+def read_text(image_data, relations, items):
+    for elem in (relations + items):
         elem_image = image_data[elem['zone'][0]:elem['zone'][1], elem['zone'][2]:elem['zone'][3]]
         elem['text'] = ocr_utils.read_text(elem_image)
-    return lists, items
+    return relations, items
 
 
-def prepare_response_data(lists):
-    for list in lists:
-        list.pop('zone', None)
-        list.pop('type', None)
-        list.pop('center_x', None)
-        list.pop('center_y', None)
-        for item in list['items']:
+def prepare_response_data(relations):
+    for relation in relations:
+        relation.pop('zone', None)
+        relation.pop('type', None)
+        relation.pop('center_x', None)
+        relation.pop('center_y', None)
+        for item in relation['items']:
             item.pop('zone', None)
             item.pop('type', None)
             item.pop('center_x', None)
             item.pop('center_y', None)
-    return lists
+    return relations

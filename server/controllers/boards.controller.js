@@ -1,7 +1,7 @@
 const path = require('path');
 const formidable = require('formidable');
 const Board = require('models/board.model');
-const List = require('models/list.model');
+const Relation = require('models/relation.model');
 const Item = require('models/item.model');
 const PrintableUtils = require('utils/printable.utils');
 const AIUtils = require('utils/ai.utils');
@@ -49,13 +49,13 @@ module.exports = {
   },
 
   /**
-   * Get all the lists of a board
+   * Get all the relations of a board
    */
-  getBoardLists(req, res, next) {
-    List.findByBoardId(req.board.id)
-      .then(lists => {
-        let listsData = lists.map(list => list.getReadableData());
-        res.send(listsData);
+  getBoardRelations(req, res, next) {
+    Relation.findByBoardId(req.board.id)
+      .then(relations => {
+        let relationsData = relations.map(relation => relation.getReadableData());
+        res.send(relationsData);
       })
       .catch(err => next(new BoardErrors.UnknownBoardError(err.message || err)));
   },
@@ -66,7 +66,7 @@ module.exports = {
   getBoardItems(req, res, next) {
     Item.findByBoardId(req.board.id)
       .then(items => {
-        let itemsData = items.map(list => list.getReadableData());
+        let itemsData = items.map(relation => relation.getReadableData());
         res.send(itemsData);
       })
       .catch(err => next(new BoardErrors.UnknownBoardError(err.message || err)));
@@ -85,13 +85,13 @@ module.exports = {
       options.format = req.query.format;
     }
 
-    List.findByBoardId(req.board.id)
-      .then(lists => {
-        data.lists = lists;
+    Relation.findByBoardId(req.board.id)
+      .then(relations => {
+        data.relations = relations;
         return Item.findByBoardId(req.board.id)
       })
       .then(items => {
-        return PrintableUtils.generatePrintableBoard(req.board, data.lists, items, options);
+        return PrintableUtils.generatePrintableBoard(req.board, data.relations, items, options);
       })
       .then(stream => {
         logger.info(`Printable version of board "${req.board.name}" generated`);
@@ -119,9 +119,9 @@ module.exports = {
       }
       let data = {};
       AIUtils.updateBoard(req.board, file.image.path)
-        .then(() => List.findByBoardId(req.board.id))
-        .then(lists => {
-          data.lists = lists.map(list => list.getReadableData());
+        .then(() => Relation.findByBoardId(req.board.id))
+        .then(relations => {
+          data.relations = relations.map(relation => relation.getReadableData());
           return Item.findByBoardId(req.board.id);
         })
         .then(items => {
