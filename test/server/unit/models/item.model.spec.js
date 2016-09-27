@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const mockgoose = require('mockgoose');
 const User = require('models/user.model');
 const Board = require('models/board.model');
-const List = require('models/list.model');
+const Relation = require('models/relation.model');
 const Item = require('models/item.model');
 const ItemErrors = require('errors/item.errors');
 const TestUtils  = require('../test.utils');
@@ -18,7 +18,7 @@ describe('Item Model', () => {
     const defaults = {
       name: 'Test Item',
       board: new Board(),
-      list: new List(),
+      relation: new Relation(),
       position: 0
     };
     item = new Item(Object.assign(defaults, props));
@@ -34,7 +34,7 @@ describe('Item Model', () => {
         .then(() => {
           expect(item.id).toBe(item._id.toString());
           expect(item.board).toBeDefined();
-          expect(item.list).toBeDefined();
+          expect(item.relation).toBeDefined();
           expect(item.name).toBe('Test Item');
           expect(item.position).toBe(0);
           expect(item.created_at).toEqual(jasmine.any(Date));
@@ -67,11 +67,11 @@ describe('Item Model', () => {
 
     it('should fail if the item doesn\'t have a board', done => {
       let data = {
-        list: null
+        relation: null
       };
       createItem(data)
         .catch(err => {
-          expect(err.errors.list.message).toBe('Path `list` is required.');
+          expect(err.errors.relation.message).toBe('Path `relation` is required.');
           done();
         });
     });
@@ -135,7 +135,7 @@ describe('Item Model', () => {
     let user;
 
     beforeEach(() => {
-      spyOn(List, 'verifyPermissions').and.returnValue(Promise.resolve({}));
+      spyOn(Relation, 'verifyPermissions').and.returnValue(Promise.resolve({}));
     });
 
     beforeEach(done => {
@@ -149,7 +149,7 @@ describe('Item Model', () => {
         .then(data => {
           expect(data.item).toBeDefined();
           expect(data.item.id).toEqual(item.id);
-          expect(List.verifyPermissions).toHaveBeenCalledWith(data.item.list, user.id);
+          expect(Relation.verifyPermissions).toHaveBeenCalledWith(data.item.relation, user.id);
           done();
         })
         .catch(err => done.fail(err));
@@ -159,7 +159,7 @@ describe('Item Model', () => {
       let itemId = new mongoose.Types.ObjectId();
       Item.verifyPermissions(itemId, user.id)
         .catch(err => {
-          expect(List.verifyPermissions).not.toHaveBeenCalled();
+          expect(Relation.verifyPermissions).not.toHaveBeenCalled();
           expect(err instanceof ItemErrors.ItemNotFoundError).toBe(true);
           done();
         });
