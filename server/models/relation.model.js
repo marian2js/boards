@@ -16,6 +16,11 @@ const RelationSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  type: {
+    type: String,
+    enum: ['vertical', 'horizontal'],
+    required: true
+  },
   position: {
     type: Number,
     required: true,
@@ -47,6 +52,7 @@ RelationSchema.methods.getReadableData = function () {
     id: this.id,
     board: this.board,
     name: this.name,
+    type: this.type,
     position: this.position,
     created_at: this.created_at
   };
@@ -58,6 +64,7 @@ RelationSchema.methods.getReadableData = function () {
 RelationSchema.methods.setEditableData = function (data) {
   let editableKeys = [
     'name',
+    'type',
     'position'
   ];
   let editableData = _.pick(data, editableKeys);
@@ -178,7 +185,8 @@ RelationSchema.pre('save', function (next) {
     return next();
   }
   let countQuery = {
-    board: this.board
+    board: this.board,
+    type: this.type
   };
   ModelUtils.validatePosition(Relation, this.position, this._oldPosition, this.isNew, countQuery)
     .then(() => next())
@@ -194,7 +202,8 @@ RelationSchema.pre('save', function (next) {
     return next();
   }
   let updateQuery = {
-    board: this.board
+    board: this.board,
+    type: this.type
   };
   ModelUtils.updatePositions(Relation, this.position, this._oldPosition, updateQuery)
     .then(() => next())
@@ -210,7 +219,8 @@ RelationSchema.post('remove', function (next) {
     return next();
   }
   let updateQuery = {
-    board: this.board
+    board: this.board,
+    type: this.type
   };
   ModelUtils.updatePositions(Relation, this.position, -1, updateQuery)
     .then(() => next())

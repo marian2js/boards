@@ -14,6 +14,8 @@ const BoardSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  vertical_relation: Boolean,
+  horizontal_relation: Boolean,
   created_at: {
     type: Date,
     default: Date.now,
@@ -34,6 +36,8 @@ BoardSchema.methods.getReadableData = function () {
   return {
     id: this.id,
     name: this.name,
+    vertical_relation: this.vertical_relation,
+    horizontal_relation: this.horizontal_relation,
     created_at: this.created_at
   };
 };
@@ -43,7 +47,9 @@ BoardSchema.methods.getReadableData = function () {
  */
 BoardSchema.methods.setEditableData = function (data) {
   let editableKeys = [
-    'name'
+    'name',
+    'vertical_relation',
+    'horizontal_relation'
   ];
   let editableData = _.pick(data, editableKeys);
   _.forEach(editableData, (value, key) => {
@@ -83,5 +89,15 @@ BoardSchema.statics.verifyPermissions = function (boardId, userId) {
       };
     });
 };
+
+/**
+ * Validate the presence of a vertical or horizontal relation
+ */
+BoardSchema.pre('save', function (next) {
+  if (!this.vertical_relation && !this.horizontal_relation) {
+    return next(new BoardErrors.FieldRequiredError('Horizontal or vertical relation'));
+  }
+  return next();
+});
 
 module.exports = mongoose.model('boards', BoardSchema);

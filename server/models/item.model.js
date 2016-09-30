@@ -12,14 +12,23 @@ const ItemSchema = new mongoose.Schema({
     required: true,
     index: true
   },
-  relation: {
+  vertical_relation: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Relation',
-    required: true,
 
     // if the relation is changed, keep track of the old relation
     set: function(relation) {
-      this._oldRelation = this.relation;
+      this._oldVerticalRelation = this.vertical_relation;
+      return relation;
+    }
+  },
+  horizontal_relation: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Relation',
+
+    // if the relation is changed, keep track of the old relation
+    set: function(relation) {
+      this._oldHorizontalRelation = this.horizontal_relation;
       return relation;
     }
   },
@@ -58,7 +67,8 @@ ItemSchema.methods.getReadableData = function () {
   return {
     id: this.id,
     board: this.board,
-    relation: this.relation,
+    vertical_relation: this.vertical_relation,
+    horizontal_relation: this.horizontal_relation,
     name: this.name,
     description: this.description,
     position: this.position,
@@ -71,7 +81,8 @@ ItemSchema.methods.getReadableData = function () {
  */
 ItemSchema.methods.setEditableData = function (data) {
   let editableKeys = [
-    'relation',
+    'vertical_relation',
+    'horizontal_relation',
     'name',
     'description',
     'position'
@@ -89,7 +100,8 @@ ItemSchema.methods.updateWithData = function (data, index) {
   if (!this.name && data.text) {
     this.name = data.text;
   }
-  this.relation = data.relation;
+  this.vertical_relation = data.vertical_relation;
+  this.horizontal_relation = data.horizontal_relation;
   this.position = index;
   this.skip_position_validation = true;
   return this.save();
@@ -104,7 +116,8 @@ ItemSchema.statics.findByBoardId = function (boardId) {
   };
   let options = {
     sort: {
-      relation: -1,
+      vertical_relation: -1,
+      horizontal_relation: -1,
       position: 1
     }
   };
@@ -114,7 +127,7 @@ ItemSchema.statics.findByBoardId = function (boardId) {
 /**
  * Finds an item by ID only if the user has permissions to use it
  */
-ItemSchema.statics.verifyPermissions = function (itemId, userId) {
+ItemSchema.statics.verifyPermissions = function (itemId, userId, relationKey) {
   let data = {};
   return this.findById(itemId)
     .then(item => {
@@ -122,7 +135,13 @@ ItemSchema.statics.verifyPermissions = function (itemId, userId) {
         throw new ItemErrors.ItemNotFoundError(itemId);
       }
       data.item = item;
-      return Relation.verifyPermissions(item.relation, userId);
+      let relationId;
+      if(relationKey) {
+        relationId = item[relationKey];
+      } else {
+        relationId = item.vertical_relation || item.horizontal_relation;
+      }
+      return Relation.verifyPermissions(relationId, userId);
     })
     .then(relationData => Object.assign(data, relationData));
 };
@@ -136,7 +155,7 @@ ItemSchema.statics.createOrUpdateItems = function (board, newItems) {
       let promises = [];
 
       // Filter items without name or relation
-      newItems = newItems.filter(t => t.text && t.relation);
+      newItems = newItems.filter(t => t.text && (t.vertical_relation || t.horizontal_relation));
 
       // Find match by name
       items.forEach((item, i) => {
@@ -152,7 +171,8 @@ ItemSchema.statics.createOrUpdateItems = function (board, newItems) {
       newItems.forEach((nt, i) => {
         let item = new Item();
         item.board = board.id;
-        item.relation = nt.relation;
+        item.vertical_relation = nt.vertical_relation;
+        item.horizontal_relation = nt.horizontal_relation;
         item.name = nt.text;
         item.position = items.length + i;
         item.items = nt.items;
@@ -172,10 +192,16 @@ ItemSchema.pre('save', function (next) {
   if (this.skip_position_validation) {
     return next();
   }
-  let countQuery = {
-    relation: this.relation
-  };
-  let isNew = this.isNew || this.relation.toString() !== this._oldRelation.toString();
+  let countQuery = {};
+  if (this.vertical_relation) {
+    countQuery.vertical_relation = this.vertical_relation;
+  }
+  if (this.horizontal_relation) {
+    countQuery.horizontal_relation = this.horizontal_relation;
+  }
+  let vRelationChanged = ModelUtils.equalIds(this.vertical_relation, this._oldVerticalRelation);
+  let hRelationChanged = ModelUtils.equalIds(this.horizontal_relation, this._oldHorizontalRelation);
+  let isNew = this.isNew || vRelationChanged || hRelationChanged;
   ModelUtils.validatePosition(Item, this.position, this._oldPosition, isNew, countQuery)
     .then(() => next())
     .catch(next);
@@ -189,13 +215,21 @@ ItemSchema.pre('save', function (next) {
   if (this.skip_position_validation) {
     return next();
   }
+
   // If the change is between relations, nothing to do here
-  if (!this.isNew && this.relation.toString() !== this._oldRelation.toString()) {
+  let vRelationChanged = ModelUtils.equalIds(this.vertical_relation, this._oldVerticalRelation);
+  let hRelationChanged = ModelUtils.equalIds(this.horizontal_relation, this._oldHorizontalRelation);
+  if (!this.isNew && !vRelationChanged && !hRelationChanged) {
     return next();
   }
-  let updateQuery = {
-    relation: this.relation
-  };
+
+  let updateQuery = {};
+  if (this.vertical_relation) {
+    updateQuery.vertical_relation = this.vertical_relation;
+  }
+  if (this.horizontal_relation) {
+    updateQuery.horizontal_relation = this.horizontal_relation;
+  }
   ModelUtils.updatePositions(Item, this.position, this._oldPosition, updateQuery)
     .then(() => next())
     .catch(next);
@@ -209,16 +243,23 @@ ItemSchema.pre('save', function (next) {
   if (this.skip_position_validation) {
     return next();
   }
-  if (this.isNew || this.relation.toString() === this._oldRelation.toString()) {
+  let vRelationChanged = ModelUtils.equalIds(this.vertical_relation, this._oldVerticalRelation);
+  let hRelationChanged = ModelUtils.equalIds(this.horizontal_relation, this._oldHorizontalRelation);
+  if (this.isNew || vRelationChanged || hRelationChanged) {
     return next();
   }
 
   let updateQuery = {
     _id: {
       $ne: this._id
-    },
-    relation: this._oldRelation
+    }
   };
+  if (this.vertical_relation) {
+    updateQuery.vertical_relation = this.vertical_relation;
+  }
+  if (this.horizontal_relation) {
+    updateQuery.horizontal_relation = this.horizontal_relation;
+  }
   if (_.isUndefined(this._oldPosition)) {
     this._oldPosition = this.position;
   }
@@ -243,9 +284,13 @@ ItemSchema.post('remove', function (next) {
   if (this.skip_position_validation) {
     return next();
   }
-  let updateQuery = {
-    relation: this.relation
-  };
+  let updateQuery = {};
+  if (this.vertical_relation) {
+    updateQuery.vertical_relation = this.vertical_relation;
+  }
+  if (this.horizontal_relation) {
+    updateQuery.horizontal_relation = this.horizontal_relation;
+  }
   ModelUtils.updatePositions(Item, this.position, -1, updateQuery)
     .then(() => next())
     .catch(next);

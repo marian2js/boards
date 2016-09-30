@@ -61,24 +61,43 @@ module.exports = {
    * Verifies if the logged user has permissions to use the endpoint
    */
   verifyPermissions(req, res, next) {
-    let relationId = req.body.relation || req.query.relation;
+    let verticalRelationId = req.body.vertical_relation || req.query.vertical_relation;
+    let horizontalRelationId = req.body.horizontal_relation || req.query.horizontal_relation;
     let itemId = req.path.split('/')[1];
-    let verifyPromise;
+    let promises = [];
+    let itemIndex, verticalRelationIndex, horizontalRelationIndex;
 
     // Verify item and/or relation permissions
     if (itemId) {
-      verifyPromise = Item.verifyPermissions(itemId, req.user.id);
-    } else if (relationId) {
-      verifyPromise = Relation.verifyPermissions(relationId, req.user.id);
-    } else {
+      itemIndex = promises.length;
+      promises.push(Item.verifyPermissions(itemId, req.user.id));
+    }
+    if (verticalRelationId) {
+      verticalRelationIndex = promises.length;
+      promises.push(Relation.verifyPermissions(verticalRelationId, req.user.id, 'vertical_relation'));
+    }
+    if (horizontalRelationId) {
+      horizontalRelationIndex = promises.length;
+      promises.push(Relation.verifyPermissions(horizontalRelationId, req.user.id, 'horizontal_relation'));
+    }
+
+    if (!promises.length) {
+      // Something is missing, throw the error
       return next(new ItemErrors.UnknownItemError());
     }
 
-    verifyPromise
+    Promise.all(promises)
       .then(data => {
-        req.board = data.board;
-        req.relation = data.relation;
-        req.item = data.item;
+        req.board = data.find(d => d.board).board;
+        if (verticalRelationIndex !== undefined) {
+          req.vertical_relation = data[verticalRelationIndex].relation;
+        }
+        if (horizontalRelationIndex !== undefined) {
+          req.horizontal_relation = data[horizontalRelationIndex].relation;
+        }
+        if (itemIndex !== undefined) {
+          req.item = data[itemIndex].item;
+        }
         next();
       })
       .catch(err => next(err || new ItemErrors.UnknownItemError()));
