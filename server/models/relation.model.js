@@ -177,6 +177,26 @@ RelationSchema.statics.createOrUpdateRelations = function (board, newRelations) 
 };
 
 /**
+ * [Pre Validate Hook]
+ * Set default position at the end
+ */
+RelationSchema.pre('validate', function (next) {
+  if(this.isNew && !this.position) {
+    let query = {
+      board: this.board,
+      type: this.type
+    };
+    Relation.count(query)
+      .then(count => {
+        this.position = count || 0;
+        next();
+      });
+  } else {
+    next();
+  }
+});
+
+/**
  * [Pre Save Hook]
  * Validate that the position is between 0 and the count of relations in the board
  */

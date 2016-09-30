@@ -185,6 +185,31 @@ ItemSchema.statics.createOrUpdateItems = function (board, newItems) {
 };
 
 /**
+ * [Pre Validate Hook]
+ * Set default position at the end
+ */
+ItemSchema.pre('validate', function (next) {
+  if(this.isNew && !this.position) {
+    let query = {
+      board: this.board
+    };
+    if (this.vertical_relation) {
+      query.vertical_relation = this.vertical_relation;
+    }
+    if (this.horizontal_relation) {
+      query.horizontal_relation = this.horizontal_relation;
+    }
+    Item.count(query)
+      .then(count => {
+        this.position = count || 0;
+        next();
+      });
+  } else {
+    next();
+  }
+});
+
+/**
  * [Pre Save Hook]
  * Validate that the position is between 0 and the count of items in the relation
  */
