@@ -189,7 +189,7 @@ ItemSchema.statics.createOrUpdateItems = function (board, newItems) {
  * Set default position at the end
  */
 ItemSchema.pre('validate', function (next) {
-  if(this.isNew && !this.position) {
+  if(this.isNew && !Number.isFinite(this.position)) {
     let query = {
       board: this.board
     };

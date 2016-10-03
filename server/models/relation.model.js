@@ -181,7 +181,7 @@ RelationSchema.statics.createOrUpdateRelations = function (board, newRelations) 
  * Set default position at the end
  */
 RelationSchema.pre('validate', function (next) {
-  if(this.isNew && !this.position) {
+  if(this.isNew && !Number.isFinite(this.position)) {
     let query = {
       board: this.board,
       type: this.type
