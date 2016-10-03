@@ -242,9 +242,9 @@ ItemSchema.pre('save', function (next) {
   }
 
   // If the change is between relations, nothing to do here
-  let vRelationChanged = ModelUtils.equalIds(this.vertical_relation, this._oldVerticalRelation);
-  let hRelationChanged = ModelUtils.equalIds(this.horizontal_relation, this._oldHorizontalRelation);
-  if (!this.isNew && !vRelationChanged && !hRelationChanged) {
+  let vRelationChanged = !ModelUtils.equalIds(this.vertical_relation, this._oldVerticalRelation);
+  let hRelationChanged = !ModelUtils.equalIds(this.horizontal_relation, this._oldHorizontalRelation);
+  if (!this.isNew && (vRelationChanged || hRelationChanged)) {
     return next();
   }
 
@@ -268,9 +268,9 @@ ItemSchema.pre('save', function (next) {
   if (this.skip_position_validation) {
     return next();
   }
-  let vRelationChanged = ModelUtils.equalIds(this.vertical_relation, this._oldVerticalRelation);
-  let hRelationChanged = ModelUtils.equalIds(this.horizontal_relation, this._oldHorizontalRelation);
-  if (this.isNew || vRelationChanged || hRelationChanged) {
+  let vRelationChanged = !ModelUtils.equalIds(this.vertical_relation, this._oldVerticalRelation);
+  let hRelationChanged = !ModelUtils.equalIds(this.horizontal_relation, this._oldHorizontalRelation);
+  if (this.isNew || (!vRelationChanged && !hRelationChanged)) {
     return next();
   }
 
@@ -279,11 +279,11 @@ ItemSchema.pre('save', function (next) {
       $ne: this._id
     }
   };
-  if (this.vertical_relation) {
-    updateQuery.vertical_relation = this.vertical_relation;
+  if (this._oldVerticalRelation) {
+    updateQuery.vertical_relation = this._oldVerticalRelation;
   }
-  if (this.horizontal_relation) {
-    updateQuery.horizontal_relation = this.horizontal_relation;
+  if (this._oldHorizontalRelation) {
+    updateQuery.horizontal_relation = this._oldHorizontalRelation;
   }
   if (_.isUndefined(this._oldPosition)) {
     this._oldPosition = this.position;
@@ -292,7 +292,12 @@ ItemSchema.pre('save', function (next) {
   // update positions on the old relation
   ModelUtils.updatePositions(Item, this._oldPosition, -1, updateQuery)
     .then(() => {
-      updateQuery.relation = this.relation;
+      if (this.vertical_relation) {
+        updateQuery.vertical_relation = this.vertical_relation;
+      }
+      if (this.horizontal_relation) {
+        updateQuery.horizontal_relation = this.horizontal_relation;
+      }
 
       // update positions on the new relation
       return ModelUtils.updatePositions(Item, this.position, null, updateQuery);
