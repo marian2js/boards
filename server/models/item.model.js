@@ -224,8 +224,8 @@ ItemSchema.pre('save', function (next) {
   if (this.horizontal_relation) {
     countQuery.horizontal_relation = this.horizontal_relation;
   }
-  let vRelationChanged = ModelUtils.equalIds(this.vertical_relation, this._oldVerticalRelation);
-  let hRelationChanged = ModelUtils.equalIds(this.horizontal_relation, this._oldHorizontalRelation);
+  let vRelationChanged = !ModelUtils.equalIds(this.vertical_relation, this._oldVerticalRelation);
+  let hRelationChanged = !ModelUtils.equalIds(this.horizontal_relation, this._oldHorizontalRelation);
   let isNew = this.isNew || vRelationChanged || hRelationChanged;
   ModelUtils.validatePosition(Item, this.position, this._oldPosition, isNew, countQuery)
     .then(() => next())
