@@ -39,7 +39,7 @@ def load_original_images(folder):
     for image in images:
         if not image.startswith('.'):
             image_file = os.path.join(folder, image)
-            image_data = read_image(image_file)
+            norm, image_data = read_image(image_file)
             dataset.append(image_data)
     return dataset
 
