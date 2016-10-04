@@ -33,13 +33,15 @@ def prepare_model_image(image_file, image_size):
     return normalize_image(image_data)
 
 
-def load_original_images(folder):
+def load_original_images(folder, image_size=None):
     images = os.listdir(folder)
     dataset = []
     for image in images:
         if not image.startswith('.'):
             image_file = os.path.join(folder, image)
             norm, image_data = read_image(image_file)
+            if image_size is not None:
+                image_data = resize_image(image_data, image_size, image_size)
             dataset.append(image_data)
     return dataset
 

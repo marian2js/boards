@@ -6,10 +6,10 @@ from utils.logger import Logger
 
 logger = Logger('generate')
 
-item_objects = image_utils.load_original_images(config['item']['objects_folder'])
 relation_objects = image_utils.load_original_images(config['relation']['objects_folder'])
-relation_backgrounds = image_utils.load_model_images(config['backgrounds']['original_folder'], image_size=1100)
-item_backgrounds = image_utils.load_model_images(config['backgrounds']['original_folder'], image_size=420)
+item_objects = image_utils.load_original_images(config['item']['objects_folder'])
+relation_backgrounds = image_utils.load_original_images(config['backgrounds']['original_folder'], image_size=800)
+item_backgrounds = image_utils.load_original_images(config['backgrounds']['original_folder'], image_size=420)
 
 
 def append_images(object_image, background, dest):
