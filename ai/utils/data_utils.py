@@ -1,5 +1,6 @@
 import numpy as np
 import math
+import functools
 from config import config
 from utils import image_utils
 from utils import ocr_utils
@@ -76,37 +77,92 @@ def locate_labels(image, model, y_conv, sess):
 
     relations = list(filter(lambda m: m['type'] == 1, matches))
     items = list(filter(lambda m: m['type'] == 0, matches))
+    for elem in (relations + items):
+        elem.pop('type', None)
 
     return relations, items
 
 
-def group_by_relation(relations, items):
+def find_element_centers(relations, items):
     for elem in (relations + items):
         elem['center_x'] = (elem['zone'][3] - elem['zone'][2]) // 2 + elem['zone'][2]
         elem['center_y'] = (elem['zone'][1] - elem['zone'][0]) // 2 + elem['zone'][0]
-    if len(relations) == 0:
-        return [{
-            'items': items
-        }]
+    return relations, items
+
+
+def find_relation_types(relations):
+    # Set ids of each relation
+    relation_id = 1
     for relation in relations:
-        relation['items'] = []
+        relation['id'] = relation_id
+        relation_id += 1
+
+    # Set vertical/horizontal relation type
+    x_count = 0
+    y_count = 0
+    first_x_relation = min(relations, key=lambda r: r['zone'][2])
+    first_y_relation = min(relations, key=lambda r: r['zone'][0])
+    for relation in relations:
+        if first_x_relation['id'] != relation['id'] and relation['zone'][2] < first_x_relation['center_x'] < relation['zone'][3]:
+            relation['type'] = 'horizontal'
+            x_count += 1
+    for relation in relations:
+        if first_y_relation['id'] != relation['id'] and relation['zone'][0] < first_y_relation['center_y'] < relation['zone'][1]:
+            relation['type'] = 'vertical'
+            y_count += 1
+    if type not in first_x_relation and x_count > 0:
+        first_x_relation['type'] = 'horizontal'
+    if type not in first_y_relation and y_count > 0:
+        first_y_relation['type'] = 'vertical'
+
+    return relations
+
+
+def group_by_relation(relations, items):
+    vertical_relations = list(filter(lambda r: r['type'] == 'vertical', relations))
+    horizontal_relations = list(filter(lambda r: r['type'] == 'horizontal', relations))
     for item in items:
+        # Set vertical relations
         min_distance = math.inf
         current_relation = None
-        for relation in relations:
+        for relation in vertical_relations:
             distance = abs(relation['center_x'] - item['center_x'])
             if distance < min_distance:
                 min_distance = distance
                 current_relation = relation
-        current_relation['items'].append(item)
-    return relations
+        if current_relation is not None:
+            item['vertical_relation'] = current_relation['id']
+
+        # Set horizontal relations
+        min_distance = math.inf
+        current_relation = None
+        for relation in horizontal_relations:
+            distance = abs(relation['center_y'] - item['center_y'])
+            if distance < min_distance:
+                min_distance = distance
+                current_relation = relation
+        if current_relation is not None:
+            item['horizontal_relation'] = current_relation['id']
+
+    return relations, items
 
 
-def sort_by_position(relations):
-    relations.sort(key=lambda e: e['center_x'] if 'center_x' in e else 0)
-    for relation in relations:
-        relation['items'].sort(key=lambda e: (e['center_y'], e['center_x']))
-    return relations
+def compare_relations(relation1, relation2):
+    if relation1['type'] == 'horizontal' and relation2['type'] == 'vertical':
+        return 1
+    if relation1['type'] == 'vertical' and relation2['type'] == 'horizontal':
+        return -1
+    if relation1['type'] == 'vertical' and relation2['type'] == 'vertical':
+        return relation1['center_x'] - relation2['center_x']
+    if relation1['type'] == 'horizontal' and relation2['type'] == 'horizontal':
+        return relation1['center_y'] - relation2['center_y']
+    return 0
+
+
+def sort_by_position(relations, items):
+    relations.sort(key=functools.cmp_to_key(compare_relations))
+    items.sort(key=lambda e: (e['center_y'], e['center_x']))
+    return relations, items
 
 
 def read_text(image_data, relations, items):
@@ -116,15 +172,9 @@ def read_text(image_data, relations, items):
     return relations, items
 
 
-def prepare_response_data(relations):
-    for relation in relations:
-        relation.pop('zone', None)
-        relation.pop('type', None)
-        relation.pop('center_x', None)
-        relation.pop('center_y', None)
-        for item in relation['items']:
-            item.pop('zone', None)
-            item.pop('type', None)
-            item.pop('center_x', None)
-            item.pop('center_y', None)
-    return relations
+def prepare_response_data(relations, items):
+    for elem in (relations + items):
+        elem.pop('zone', None)
+        elem.pop('center_x', None)
+        elem.pop('center_y', None)
+    return relations, items
