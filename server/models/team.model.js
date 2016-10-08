@@ -94,16 +94,37 @@ TeamSchema.methods._getNewInitials = function (user) {
 
   // Set the best initials available
   let bestInitials = [];
-  bestInitials.push(user.username[0]);
-  bestInitials.push(user.first_name[0]);
-  bestInitials.push(user.last_name[0]);
-  bestInitials.push(user.email[0]);
-  bestInitials.push(user.first_name[0] + user.last_name[0]);
-  bestInitials.push(user.username.slice(0, 2));
-  bestInitials.push(user.first_name.slice(0, 2));
-  bestInitials.push(user.last_name.slice(0, 2));
-  bestInitials.push(user.email.slice(0, 2));
-  bestInitials = bestInitials.map(i => i.toLowerCase());
+  if (user.username) {
+    bestInitials.push(user.username[0]);
+  }
+  if (user.first_name) {
+    bestInitials.push(user.first_name[0]);
+  }
+  if (user.last_name) {
+    bestInitials.push(user.last_name[0]);
+  }
+  if (user.email) {
+    bestInitials.push(user.email[0]);
+  }
+  if (user.first_name && user.last_name) {
+    bestInitials.push(user.first_name[0] + user.last_name[0]);
+  }
+  if (user.username) {
+    bestInitials.push(user.username.slice(0, 2));
+  }
+  if (user.first_name) {
+    bestInitials.push(user.first_name.slice(0, 2));
+  }
+  if (user.last_name) {
+    bestInitials.push(user.last_name.slice(0, 2));
+  }
+  if (user.email) {
+    bestInitials.push(user.email.slice(0, 2));
+  }
+  bestInitials = bestInitials
+    .map(i => i.toLowerCase())
+    .map(i => i.replace(/[^a-z]/g, ''))
+    .filter(i => !!i);
   bestInitials = _.uniq(bestInitials);
   for (let initials of bestInitials) {
     if (!listInitials.includes(initials)) {
