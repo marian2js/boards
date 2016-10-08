@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const _ = require('lodash');
+const ModelUtils = require('utils/model.utils');
 const TeamErrors = require('errors/team.errors');
 const UserErrors = require('errors/user.errors');
 
@@ -161,7 +162,7 @@ TeamSchema.statics.verifyPermissions = function (teamId, userId) {
       if (!team) {
         throw new TeamErrors.TeamNotFoundError(teamId);
       }
-      let member = team.users.find(user => user.id === userId);
+      let member = team.users.find(u => ModelUtils.equalIds(u.user, userId));
       if (!member) {
         throw new UserErrors.UnauthorizedUserError();
       }
