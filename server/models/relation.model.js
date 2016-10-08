@@ -76,12 +76,13 @@ RelationSchema.methods.setEditableData = function (data) {
 /**
  * Update a relation with raw data
  */
-RelationSchema.methods.updateWithData = function (data, index) {
+RelationSchema.methods.updateWithData = function (data) {
   if (!this.name && data.text) {
     this.name = data.text;
   }
-  this.position = index;
-  this.items = data.items;
+  this.position = data.index;
+  this.type = data.type;
+  this.rid = data.id;
   this.skip_position_validation = true;
   return this.save();
 };
@@ -125,16 +126,21 @@ RelationSchema.statics.createOrUpdateRelations = function (board, newRelations) 
     .then(relations => {
       let promises = [];
 
-      newRelations.forEach((nl, i) => {
-        nl.text = nl.text || `Relation ${i + 1}`;
-        nl.index = i;
+      let relationsCount = {
+        vertical: 0,
+        horizontal: 0
+      };
+      newRelations.forEach((nrel) => {
+        nrel.text = nrel.text || `Relation ${relationsCount[nrel.type] + 1}`;
+        nrel.index = relationsCount[nrel.type];
+        relationsCount[nrel.type]++;
       });
 
       // Find match by name
       relations.forEach((relation, i) => {
         let pos = newRelations.findIndex(l => DataUtils.namesMatch(l.text, relation.name));
         if (pos !== -1) {
-          promises.push(relation.updateWithData(newRelations[pos], i));
+          promises.push(relation.updateWithData(newRelations[pos]));
           newRelations.splice(pos, 1);
           relation.found = true;
         }
@@ -143,36 +149,33 @@ RelationSchema.statics.createOrUpdateRelations = function (board, newRelations) 
       // Find match by position
       relations.forEach((relation, i) => {
         if (!relation.found) {
-          let pos = newRelations.findIndex(l => l.index === i);
+          let pos = newRelations.findIndex(r => r.index === i && r.type === relation.type);
           if (pos !== -1) {
-            promises.push(relation.updateWithData(newRelations[pos], i));
+            promises.push(relation.updateWithData(newRelations[pos]));
             newRelations.splice(pos, 1);
           }
         }
       });
 
       // Add new relations
-      newRelations.forEach((nl, i) => {
+      relationsCount = {
+        vertical: 0,
+        horizontal: 0
+      };
+      newRelations.forEach(nrel => {
         let relation = new Relation();
         relation.board = board.id;
-        relation.name = nl.text;
-        relation.position = relations.length + i;
-        relation.items = nl.items;
+        relation.name = nrel.text;
+        relation.position = relations
+            .filter(r => r.type === nrel.type).length + relationsCount[nrel.type];
+        relation.type = nrel.type;
+        relation.rid = nrel.id;
         relation.skip_position_validation = true;
         promises.push(relation.save());
+        relationsCount[nrel.type]++;
       });
 
       return Promise.all(promises);
-    })
-    .then(relations => {
-      let data = {};
-      data.items = [];
-      relations.forEach(relation => {
-        relation.items.forEach(t => t.relation = relation.id);
-        data.items = data.items.concat(relation.items);
-      });
-      data.relations = relations;
-      return data;
     });
 };
 

@@ -149,13 +149,23 @@ ItemSchema.statics.verifyPermissions = function (itemId, userId, relationKey) {
 /**
  * Create or update multiple items with raw data
  */
-ItemSchema.statics.createOrUpdateItems = function (board, newItems) {
+ItemSchema.statics.createOrUpdateItems = function (board, relations, newItems) {
   return this.findByBoardId(board)
     .then(items => {
       let promises = [];
 
       // Filter items without name or relation
       newItems = newItems.filter(t => t.text && (t.vertical_relation || t.horizontal_relation));
+
+      // Set relation IDs
+      newItems.forEach(item => {
+        if (item.vertical_relation) {
+          item.vertical_relation = relations.find(r => r.rid === item.vertical_relation).id;
+        }
+        if (item.horizontal_relation) {
+          item.horizontal_relation = relations.find(r => r.rid === item.horizontal_relation).id;
+        }
+      });
 
       // Find match by name
       items.forEach((item, i) => {

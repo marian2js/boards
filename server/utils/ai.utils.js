@@ -10,11 +10,11 @@ module.exports = {
   updateBoard(board, image) {
     let data;
     return this.processImage(image)
-      .then(relations => Relation.createOrUpdateRelations(board, relations))
       .then(_data => {
         data = _data;
-        return Item.createOrUpdateItems(board, data.items);
+        return Relation.createOrUpdateRelations(board, data.relations);
       })
+      .then(relations => Item.createOrUpdateItems(board, relations, data.items))
       .then(items => {
         data.items = items;
         return data;
