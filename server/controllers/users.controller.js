@@ -1,8 +1,9 @@
 const jwt = require('express-jwt');
-const _ = require('lodash');
+
 const config = require('config');
 const User = require('../models/user.model');
 const Board = require('../models/board.model');
+const Team = require('../models/team.model');
 const UserErrors = require('errors/user.errors');
 const Logger = require('utils/logger');
 const logger = new Logger('Users Controller');
@@ -41,6 +42,18 @@ module.exports = {
         res.send(boardsData);
       })
       .catch(err => next(new UserErrors.UnknownUserError(err.message || err)));
+  },
+
+  /**
+   * Get an array with the teams of an user
+   */
+  getUserTeams(req, res, next) {
+    Team.findByUserId(req.user.id)
+      .then(teams => {
+        let teamsData = teams.map(team => team.getReadableData());
+        res.send(teamsData);
+      })
+      .catch(err => next(err || new UserErrors.UnknownUserError()));
   },
 
   /**

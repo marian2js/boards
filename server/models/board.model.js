@@ -16,6 +16,10 @@ const BoardSchema = new mongoose.Schema({
   },
   vertical_relation: Boolean,
   horizontal_relation: Boolean,
+  team: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Team'
+  },
   created_at: {
     type: Date,
     default: Date.now,
@@ -38,6 +42,7 @@ BoardSchema.methods.getReadableData = function () {
     name: this.name,
     vertical_relation: this.vertical_relation,
     horizontal_relation: this.horizontal_relation,
+    team: this.team,
     created_at: this.created_at
   };
 };
@@ -49,7 +54,8 @@ BoardSchema.methods.setEditableData = function (data) {
   let editableKeys = [
     'name',
     'vertical_relation',
-    'horizontal_relation'
+    'horizontal_relation',
+    'team'
   ];
   let editableData = _.pick(data, editableKeys);
   _.forEach(editableData, (value, key) => {
