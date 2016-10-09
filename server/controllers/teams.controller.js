@@ -89,7 +89,7 @@ module.exports = {
       })
       .then(() => {
         logger.info(`User added to team "${req.team.id}"`);
-        res.sendStatus(204);
+        res.send(req.team.getReadableData());
       })
       .catch(err => next(err || new TeamErrors.UnknownTeamError()));
   },
