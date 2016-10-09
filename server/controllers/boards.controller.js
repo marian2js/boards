@@ -3,6 +3,7 @@ const formidable = require('formidable');
 const Board = require('models/board.model');
 const Relation = require('models/relation.model');
 const Item = require('models/item.model');
+const Team = require('models/team.model');
 const PrintableUtils = require('utils/printable.utils');
 const AIUtils = require('utils/ai.utils');
 const BoardErrors = require('errors/board.errors');
@@ -91,7 +92,13 @@ module.exports = {
         return Item.findByBoardId(req.board.id)
       })
       .then(items => {
-        return PrintableUtils.generatePrintableBoard(req.board, data.relations, items, options);
+        data.items = items;
+        if (req.board.team) {
+          return Team.findById(req.board.team);
+        }
+      })
+      .then(team => {
+        return PrintableUtils.generatePrintableBoard(req.board, data.relations, data.items, team, options);
       })
       .then(stream => {
         logger.info(`Printable version of board "${req.board.name}" generated`);
