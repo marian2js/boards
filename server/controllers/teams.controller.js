@@ -25,7 +25,26 @@ module.exports = {
    * Get data from a team by ID
    */
   getTeamById(req, res) {
-    res.send(req.team.getReadableData());
+    let query = {
+      _id: {
+        $in: req.team.users.map(u => u.user)
+      }
+    };
+    User.find(query)
+      .then(users => {
+        let teamData = req.team.getReadableData();
+        teamData.users = teamData.users
+          .map(user => {
+            let teamUser = user.toObject();
+            let userData = users.find(u => user.user.toString() === u._id.toString());
+            if (userData) {
+              teamUser.user = userData.getReadableData();
+            }
+            return teamUser;
+          });
+        res.send(teamData);
+      })
+      .catch(err => next(err || new TeamErrors.UnknownTeamError()));
   },
 
   /**
