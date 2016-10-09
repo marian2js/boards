@@ -4,6 +4,7 @@ const Board = require('models/board.model');
 const Relation = require('models/relation.model');
 const Item = require('models/item.model');
 const Team = require('models/team.model');
+const User = require('models/user.model');
 const PrintableUtils = require('utils/printable.utils');
 const AIUtils = require('utils/ai.utils');
 const BoardErrors = require('errors/board.errors');
@@ -31,7 +32,40 @@ module.exports = {
    * Get data from a board by ID
    */
   getBoardById(req, res) {
-    res.send(req.board.getReadableData());
+    let boardData = req.board.getReadableData();
+    let promise;
+    if (req.board.team) {
+      promise = Team.findById(req.board.team)
+        .then(team => {
+          if (!team) {
+            return;
+          }
+          boardData.team = team.getReadableData();
+          let query = {
+            _id: {
+              $in: team.users.map(u => u.user)
+            }
+          };
+          return User.find(query);
+        })
+        .then(users => {
+          if (!users) {
+            return;
+          }
+          boardData.team.users = boardData.team.users
+            .map(user => {
+              let teamUser = user.toObject();
+              let userData = users.find(u => user.user.toString() === u._id.toString());
+              if (userData) {
+                teamUser.user = userData.getReadableData();
+              }
+              return teamUser;
+            });
+        });
+    } else {
+      promise = Promise.resolve();
+    }
+    promise.then(() => res.send(boardData));
   },
 
   /**
