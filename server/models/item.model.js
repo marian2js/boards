@@ -47,6 +47,12 @@ const ItemSchema = new mongoose.Schema({
       return position;
     }
   },
+  assignees: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+    index: true
+  }],
   created_at: {
     type: Date,
     default: Date.now,
@@ -72,6 +78,7 @@ ItemSchema.methods.getReadableData = function () {
     name: this.name,
     description: this.description,
     position: this.position,
+    assignees: this.assignees,
     created_at: this.created_at
   };
 };
@@ -85,7 +92,8 @@ ItemSchema.methods.setEditableData = function (data) {
     'horizontal_relation',
     'name',
     'description',
-    'position'
+    'position',
+    'assignees'
   ];
   let editableData = _.pick(data, editableKeys);
   _.forEach(editableData, (value, key) => {
