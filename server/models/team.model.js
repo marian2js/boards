@@ -74,7 +74,7 @@ TeamSchema.methods.addUser = function (user) {
   let newUser = {
     user: user.id,
   };
-  let userExist = this.users.find(user => user.id === newUser.user);
+  let userExist = this.users.find(u => ModelUtils.equalIds(u.user, newUser.user));
   if (userExist) {
     throw new TeamErrors.DuplicateUserError();
   }
