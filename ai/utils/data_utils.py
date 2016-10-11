@@ -165,10 +165,10 @@ def sort_by_position(relations, items):
     return relations, items
 
 
-def read_text(image_data, relations, items):
+def read_text(image_data, relations, items, lang):
     for elem in (relations + items):
         elem_image = image_data[elem['zone'][0]:elem['zone'][1], elem['zone'][2]:elem['zone'][3]]
-        elem['text'] = ocr_utils.read_text(elem_image)
+        elem['text'] = ocr_utils.read_text(elem_image, lang)
     return relations, items
 
 

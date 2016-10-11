@@ -14,7 +14,7 @@ from utils.logger import Logger
 logger = Logger('process_board')
 
 
-def process_board(image_file):
+def process_board(image_file, lang):
     graph = tf.Graph()
 
     with graph.as_default():
@@ -46,7 +46,7 @@ def process_board(image_file):
         logger.debug('Saving results image on %s' % path)
         misc.imsave(path, image_data)
 
-        relations, items = data_utils.read_text(image, relations, items)
+        relations, items = data_utils.read_text(image, relations, items, lang=lang)
         relations, items = data_utils.find_element_centers(relations, items)
         relations = data_utils.find_relation_types(relations)
         relations, items = data_utils.group_by_relation(relations, items)
@@ -66,12 +66,13 @@ def process_board(image_file):
 def main(argv):
     help_text = 'Usage: process_board.py -i <image>'
     try:
-        opts, args = getopt.getopt(argv, "hi:l:", ['help', 'image=', 'log='])
+        opts, args = getopt.getopt(argv, "hi:l:g:", ['help', 'image=', 'lang=', 'log='])
     except getopt.GetoptError:
         print(help_text)
         sys.exit(2)
 
     image = None
+    lang = None
     log_level = None
     for o, a in opts:
         if o in ("-h", "--help"):
@@ -79,7 +80,9 @@ def main(argv):
             sys.exit()
         elif o in ("-i", "--image"):
             image = a
-        elif o in ("-l", "--logger"):
+        elif o in ("-l", "--lang"):
+            lang = a
+        elif o in ("-g", "--log"):
             log_level = a
 
     if image is None:
@@ -89,7 +92,7 @@ def main(argv):
     if not log_level is None:
         Logger.set_level(log_level)
 
-    process_board(image)
+    process_board(image, lang)
 
 
 if __name__ == "__main__":
