@@ -9,7 +9,7 @@ module.exports = {
    */
   updateBoard(board, image) {
     let data;
-    return this.processImage(image)
+    return this.processImage(image, board.language)
       .then(_data => {
         data = _data;
         return Relation.createOrUpdateRelations(board, data.relations);
@@ -24,9 +24,9 @@ module.exports = {
   /**
    * Extracts board elements from an image
    */
-  processImage(image) {
+  processImage(image, language) {
     return new Promise((resolve, reject) => {
-      const cmd = `cd ai; python3 ./process_board.py -i ${image}`;
+      const cmd = `cd ai; python3 ./process_board.py -i ${image} -l ${language}`;
       exec(cmd, (error, stdout) => {
         if (error) {
           return reject(error);

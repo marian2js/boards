@@ -20,6 +20,14 @@ const BoardSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Team'
   },
+  language: {
+    type: String,
+    enum: [
+      'english',
+      'spanish'
+    ],
+    default: 'english'
+  },
   created_at: {
     type: Date,
     default: Date.now,
@@ -43,6 +51,7 @@ BoardSchema.methods.getReadableData = function () {
     vertical_relation: this.vertical_relation,
     horizontal_relation: this.horizontal_relation,
     team: this.team,
+    language: this.language,
     created_at: this.created_at
   };
 };
@@ -55,7 +64,8 @@ BoardSchema.methods.setEditableData = function (data) {
     'name',
     'vertical_relation',
     'horizontal_relation',
-    'team'
+    'team',
+    'language'
   ];
   let editableData = _.pick(data, editableKeys);
   _.forEach(editableData, (value, key) => {
