@@ -7,20 +7,25 @@ logger = Logger('prepare_dataset')
 
 # Load dataset
 items_dataset = image_utils.load_model_images(config['item']['original_folder'])
+items_generated = image_utils.load_model_images(config['item']['generated_folder'])
 relations_dataset = image_utils.load_model_images(config['relation']['original_folder'])
 relations_generated = image_utils.load_model_images(config['relation']['generated_folder'])
 backgrounds_dataset = image_utils.load_model_images(config['backgrounds']['original_folder'])
 outliers_dataset = image_utils.load_model_images(config['outlier']['original_folder'])
 
-relations_dataset = relations_dataset + relations_generated
-
 # Rotate items 90, 180 and 270 degrees
 generated_images = image_utils.rotate_images(items_dataset)
 items_dataset = items_dataset + generated_images
 
+# Add generated items
+items_dataset = items_dataset + items_generated
+
 # Rotate relations 180 degrees
 generated_images = image_utils.rotate_images(relations_dataset, rotations=[2])
 relations_dataset = relations_dataset + generated_images
+
+# Add generated relations
+relations_dataset = relations_dataset + relations_generated
 
 # Rotate outliers 90, 180 and 270 degrees
 generated_images = image_utils.rotate_images(outliers_dataset)
