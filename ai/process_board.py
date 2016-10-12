@@ -51,7 +51,7 @@ def process_board(image_file, lang):
         relations = data_utils.find_relation_types(relations)
         relations, items = data_utils.group_by_relation(relations, items)
         relations,items = data_utils.sort_by_position(relations, items)
-        data_utils.prepare_response_data(relations, items)
+        data_utils.prepare_response_data(relations, items, users)
 
         # Print the JSON response
         print(json.dumps({

@@ -198,9 +198,9 @@ def read_text(image_data, relations, items, lang):
     return relations, items
 
 
-def prepare_response_data(relations, items):
-    for elem in (relations + items):
+def prepare_response_data(relations, items, users):
+    for elem in (relations + items + users):
         elem.pop('zone', None)
         elem.pop('center_x', None)
         elem.pop('center_y', None)
-    return relations, items
+    return relations, items, users
