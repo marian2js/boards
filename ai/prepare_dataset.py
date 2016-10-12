@@ -10,6 +10,7 @@ items_dataset = image_utils.load_model_images(config['item']['original_folder'])
 items_generated = image_utils.load_model_images(config['item']['generated_folder'])
 relations_dataset = image_utils.load_model_images(config['relation']['original_folder'])
 relations_generated = image_utils.load_model_images(config['relation']['generated_folder'])
+users_dataset = image_utils.load_model_images(config['user']['original_folder'])
 backgrounds_dataset = image_utils.load_model_images(config['backgrounds']['original_folder'])
 outliers_dataset = image_utils.load_model_images(config['outlier']['original_folder'])
 
@@ -46,6 +47,13 @@ for i in range(len(relations_dataset)):
     path = config['relation']['folder'] + '/' + str(i) + '.jpg'
     logger.info('creating %s' % path)
     image = image_utils.clean_shape(relations_dataset[i])
+    misc.imsave(path, image)
+
+# Save users
+for i in range(len(users_dataset)):
+    path = config['user']['folder'] + '/' + str(i) + '.jpg'
+    logger.info('creating %s' % path)
+    image = image_utils.clean_shape(users_dataset[i])
     misc.imsave(path, image)
 
 # Save outliers

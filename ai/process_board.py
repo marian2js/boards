@@ -36,11 +36,11 @@ def process_board(image_file, lang):
         start_time = time.time()
 
         image_data, image = image_utils.read_image(image_file)
-        relations, items = data_utils.locate_labels(image_data, model, y_conv, sess)
-        image_data = image_utils.clean_shape(image_data)
+        relations, items, users = data_utils.locate_labels(image_data, model, y_conv, sess)
 
         # Creates an image showing the matches
-        for match in (relations + items):
+        image_data = image_utils.clean_shape(image_data)
+        for match in (relations + items + users):
             image_data = image_utils.draw_border(image_data, match['zone'][0], match['zone'][2], match['zone'][1], match['zone'][3])
         path = 'dataset/results.jpg'
         logger.debug('Saving results image on %s' % path)

@@ -18,7 +18,7 @@ def classify_image(image_data, model, y_conv, sess):
     return type, confidence
 
 
-def classify_with_window(image, zone_marks, resize, model, y_conv, sess):
+def classify_with_window(image, targets, zone_marks, resize, model, y_conv, sess):
     """Use a sliding window to classify multiple elements in the image"""
     logger.info('Classifying with %dx resize' % resize)
 
@@ -53,7 +53,7 @@ def classify_with_window(image, zone_marks, resize, model, y_conv, sess):
 
             window_image = image_data[y_offset:y_offset + window_size, x_offset:x_offset + window_size]
             prediction, confidence = classify_image(window_image, model, y_conv, sess)
-            if (prediction == 0 or prediction == 1) and confidence > config['match_min_confidence']:
+            if prediction in targets and confidence > config['match_min_confidence']:
                 logger.debug('Prediction %d with confidence %f' % (prediction, confidence))
 
                 matches.append({
@@ -65,22 +65,48 @@ def classify_with_window(image, zone_marks, resize, model, y_conv, sess):
     return matches
 
 
+def localte_users(image, item, model, y_conv, sess):
+    """Locate users in an item"""
+    logger.info('Classifying users in item %s' % item)
+
+    item_image = image[item['zone'][0]:item['zone'][1], item['zone'][2]:item['zone'][3]]
+    zone_marks = np.zeros((item_image.shape[0], item_image.shape[1]))
+    resize = 5
+    targets = [2]
+
+    matches = classify_with_window(item_image, targets, zone_marks, resize, model, y_conv, sess)
+    for match in matches:
+        match['zone'][0] += item['zone'][0]
+        match['zone'][1] += item['zone'][0]
+        match['zone'][2] += item['zone'][2]
+        match['zone'][3] += item['zone'][2]
+
+    return matches
+
+
 def locate_labels(image, model, y_conv, sess):
     zone_marks = np.zeros((image.shape[0], image.shape[1]))
     resize = 21
     matches = []
-    matches += classify_with_window(image, zone_marks, resize, model, y_conv, sess)
-    matches += classify_with_window(image, zone_marks, int(resize // pow(1.2, 2)), model, y_conv, sess)
-    matches += classify_with_window(image, zone_marks, int(resize // pow(1.2, 3)), model, y_conv, sess)
-    matches += classify_with_window(image, zone_marks, int(resize // pow(1.2, 4)), model, y_conv, sess)
-    matches += classify_with_window(image, zone_marks, int(resize // pow(1.2, 5)), model, y_conv, sess)
+    targets = [0, 1]
+    matches += classify_with_window(image, targets, zone_marks, resize, model, y_conv, sess)
+    matches += classify_with_window(image, targets, zone_marks, int(resize // pow(1.2, 2)), model, y_conv, sess)
+    matches += classify_with_window(image, targets, zone_marks, int(resize // pow(1.2, 3)), model, y_conv, sess)
+    matches += classify_with_window(image, targets, zone_marks, int(resize // pow(1.2, 4)), model, y_conv, sess)
+    matches += classify_with_window(image, targets, zone_marks, int(resize // pow(1.2, 5)), model, y_conv, sess)
 
     relations = list(filter(lambda m: m['type'] == 1, matches))
     items = list(filter(lambda m: m['type'] == 0, matches))
-    for elem in (relations + items):
+
+    users = []
+    for item in items:
+        item['users'] = localte_users(image, item, model, y_conv, sess)
+        users += item['users']
+
+    for elem in (relations + items + users):
         elem.pop('type', None)
 
-    return relations, items
+    return relations, items, users
 
 
 def find_element_centers(relations, items):
