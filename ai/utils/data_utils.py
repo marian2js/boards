@@ -195,6 +195,10 @@ def read_text(image_data, relations, items, lang):
     for elem in (relations + items):
         elem_image = image_data[elem['zone'][0]:elem['zone'][1], elem['zone'][2]:elem['zone'][3]]
         elem['text'] = ocr_utils.read_text(elem_image, lang)
+    for item in items:
+        for user in item['users']:
+            user_image = image_data[user['zone'][0]:user['zone'][1], user['zone'][2]:user['zone'][3]]
+            user['text'] = ocr_utils.read_user(user_image)
     return relations, items
 
 
