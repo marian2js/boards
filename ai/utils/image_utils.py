@@ -36,6 +36,7 @@ def prepare_model_image(image_file, image_size):
 def load_original_images(folder, image_size=None):
     images = os.listdir(folder)
     dataset = []
+    names = []
     for image in images:
         if not image.startswith('.'):
             image_file = os.path.join(folder, image)
@@ -43,7 +44,8 @@ def load_original_images(folder, image_size=None):
             if image_size is not None:
                 image_data = resize_image(image_data, image_size, image_size)
             dataset.append(image_data)
-    return dataset
+            names.append(image)
+    return dataset, names
 
 
 def read_image(image_file):
