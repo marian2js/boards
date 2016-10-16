@@ -25,7 +25,28 @@ module.exports = {
    * Get data from an item by ID
    */
   getItemById(req, res) {
-    res.send(req.item.getReadableData());
+    let item = req.item.getReadableData();
+    let promise;
+    if (req.item.link_relation) {
+      promise = Relation.findById(req.item.link_relation)
+        .then(relation => {
+          item.link_relation = relation.getReadableData();
+          let query = {
+            $or: [{
+              vertical_relation: item.link_relation.id
+            }, {
+              horizontal_relation: item.link_relation.id
+            }]
+          };
+          return Item.find(query);
+        })
+        .then(items => {
+          item.link_relation_items = items.map(item => item.getReadableData());
+        });
+    } else {
+      promise = Promise.resolve();
+    }
+    promise.then(() => res.send(item));
   },
 
   /**

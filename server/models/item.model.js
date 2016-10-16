@@ -53,6 +53,10 @@ const ItemSchema = new mongoose.Schema({
     required: true,
     index: true
   }],
+  link_relation: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Relation'
+  },
   created_at: {
     type: Date,
     default: Date.now,
@@ -79,6 +83,7 @@ ItemSchema.methods.getReadableData = function () {
     description: this.description,
     position: this.position,
     assignees: this.assignees,
+    link_relation: this.link_relation,
     created_at: this.created_at
   };
 };
@@ -93,7 +98,8 @@ ItemSchema.methods.setEditableData = function (data) {
     'name',
     'description',
     'position',
-    'assignees'
+    'assignees',
+    'link_relation'
   ];
   let editableData = _.pick(data, editableKeys);
   _.forEach(editableData, (value, key) => {
