@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const _ = require('lodash');
 const Relation = require('models/relation.model');
+const Team = require('models/team.model');
 const ModelUtils = require('utils/model.utils');
 const DataUtils = require('utils/data.utils');
 const ItemErrors = require('errors/item.errors');
@@ -110,7 +111,7 @@ ItemSchema.methods.setEditableData = function (data) {
 /**
  * Update an item with raw data
  */
-ItemSchema.methods.updateWithData = function (data, index) {
+ItemSchema.methods.updateWithData = function (data, index, team) {
   if (!this.name && data.text) {
     this.name = data.text;
   }
@@ -118,7 +119,20 @@ ItemSchema.methods.updateWithData = function (data, index) {
   this.horizontal_relation = data.horizontal_relation;
   this.position = index;
   this.skip_position_validation = true;
+  this.updateAssignees(data, team);
   return this.save();
+};
+
+ItemSchema.methods.updateAssignees = function (data, team) {
+  if (!data.users || !team || !team.users) {
+    return;
+  }
+  data.users = data.users
+    .map(u => u.text && u.text.toLowerCase())
+    .filter(u => !!u);
+  this.assignees = team.users
+    .filter(u => data.users.includes(u.initials))
+    .map(u => u.user);
 };
 
 /**
@@ -164,8 +178,16 @@ ItemSchema.statics.verifyPermissions = function (itemId, userId, relationKey) {
  * Create or update multiple items with raw data
  */
 ItemSchema.statics.createOrUpdateItems = function (board, relations, newItems) {
+  let data = {};
   return this.findByBoardId(board)
     .then(items => {
+      data.items = items;
+      if (board.team) {
+        return Team.findById(board.team);
+      }
+    })
+    .then(team => {
+      let items = data.items;
       let promises = [];
 
       // Filter items without name or relation
@@ -185,7 +207,7 @@ ItemSchema.statics.createOrUpdateItems = function (board, relations, newItems) {
       items.forEach((item, i) => {
         let pos = newItems.findIndex(l => DataUtils.namesMatch(l.text, item.name));
         if (pos !== -1) {
-          promises.push(item.updateWithData(newItems[pos], i));
+          promises.push(item.updateWithData(newItems[pos], i, team));
           newItems.splice(pos, 1);
           item.found = true;
         }
@@ -201,6 +223,7 @@ ItemSchema.statics.createOrUpdateItems = function (board, relations, newItems) {
         item.position = items.length + i;
         item.items = nt.items;
         item.skip_position_validation = true;
+        item.updateAssignees(nt, team);
         promises.push(item.save());
       });
 

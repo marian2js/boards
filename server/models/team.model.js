@@ -14,7 +14,8 @@ const TeamUserSchema = new mongoose.Schema({
   },
   initials: {
     type: String,
-    lowercase: true
+    lowercase: true,
+    required: true
   },
   is_owner: {
     type: Boolean,
