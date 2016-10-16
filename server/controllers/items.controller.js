@@ -18,7 +18,7 @@ module.exports = {
         logger.info(`Item ID "${item.id}" created`);
         res.send(item.getReadableData());
       })
-      .catch(err => next(new ItemErrors.UnknownItemError(err.message || err)));
+      .catch(err => next(err || new ItemErrors.UnknownItemError()));
   },
 
   /**
@@ -61,7 +61,7 @@ module.exports = {
         logger.info(`Item ID "${req.item.id}" updated`);
         res.send(req.item.getReadableData());
       })
-      .catch(err => next(new ItemErrors.UnknownItemError(err.message || err)));
+      .catch(err => next(err || new ItemErrors.UnknownItemError()));
   },
 
   /**
@@ -75,7 +75,7 @@ module.exports = {
         logger.info(`Item ID "${req.item.id}" deleted`);
         res.status(204).end();
       })
-      .catch(err => next(new ItemErrors.UnknownItemError(err.message || err)));
+      .catch(err => next(err || new ItemErrors.UnknownItemError()));
   },
 
   /**

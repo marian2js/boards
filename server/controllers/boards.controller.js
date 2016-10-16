@@ -25,13 +25,13 @@ module.exports = {
         logger.info(`Board "${board.name}" created`);
         res.send(board.getReadableData());
       })
-      .catch(err => next(new BoardErrors.UnknownBoardError(err.message || err)));
+      .catch(err => next(err || new BoardErrors.UnknownBoardError()));
   },
 
   /**
    * Get data from a board by ID
    */
-  getBoardById(req, res) {
+  getBoardById(req, res, next) {
     let boardData = req.board.getReadableData();
     let promise;
     if (req.board.team) {
@@ -65,7 +65,9 @@ module.exports = {
     } else {
       promise = Promise.resolve();
     }
-    promise.then(() => res.send(boardData));
+    promise
+      .then(() => res.send(boardData))
+      .catch(err => next(err || new BoardErrors.UnknownBoardError()));
   },
 
   /**
@@ -80,7 +82,7 @@ module.exports = {
         logger.info(`Board "${req.board.name}" updated`);
         res.send(req.board.getReadableData());
       })
-      .catch(err => next(new BoardErrors.UnknownBoardError(err.message || err)));
+      .catch(err => next(err || new BoardErrors.UnknownBoardError()));
   },
 
   /**
@@ -92,7 +94,7 @@ module.exports = {
         let relationsData = relations.map(relation => relation.getReadableData());
         res.send(relationsData);
       })
-      .catch(err => next(new BoardErrors.UnknownBoardError(err.message || err)));
+      .catch(err => next(err || new BoardErrors.UnknownBoardError()));
   },
 
   /**
@@ -104,7 +106,7 @@ module.exports = {
         let itemsData = items.map(relation => relation.getReadableData());
         res.send(itemsData);
       })
-      .catch(err => next(new BoardErrors.UnknownBoardError(err.message || err)));
+      .catch(err => next(err || new BoardErrors.UnknownBoardError()));
   },
 
   /**
@@ -141,7 +143,7 @@ module.exports = {
         }
         stream.pipe(res);
       })
-      .catch(err => next(new BoardErrors.UnknownBoardError(err.message || err)));
+      .catch(err => next(err || new BoardErrors.UnknownBoardError()));
   },
 
   /**
@@ -169,7 +171,7 @@ module.exports = {
           data.items = items.map(item => item.getReadableData());
           res.send(data);
         })
-        .catch(err => next(new BoardErrors.UnknownBoardError(err.message || err)));
+        .catch(err => next(err || new BoardErrors.UnknownBoardError()));
     });
   },
 

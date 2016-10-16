@@ -18,7 +18,7 @@ module.exports = {
         logger.info(`Relation "${relation.name}" created`);
         res.send(relation.getReadableData());
       })
-      .catch(err => next(new RelationErrors.UnknownRelationError(err.message || err)));
+      .catch(err => next(err || new RelationErrors.UnknownRelationError()));
   },
 
   /**
@@ -40,7 +40,7 @@ module.exports = {
         logger.info(`Relation "${req.relation.name}" updated`);
         res.send(req.relation.getReadableData());
       })
-      .catch(err => next(new RelationErrors.UnknownRelationError(err.message || err)));
+      .catch(err => next(err || new RelationErrors.UnknownRelationError()));
   },
 
   /**
@@ -54,7 +54,7 @@ module.exports = {
         logger.info(`Relation "${req.relation.name}" deleted`);
         res.status(204).end();
       })
-      .catch(err => next(new RelationErrors.UnknownRelationError(err.message || err)));
+      .catch(err => next(err || new RelationErrors.UnknownRelationError()));
   },
 
   /**

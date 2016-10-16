@@ -24,7 +24,7 @@ module.exports = {
   /**
    * Get data from a team by ID
    */
-  getTeamById(req, res) {
+  getTeamById(req, res, next) {
     let query = {
       _id: {
         $in: req.team.users.map(u => u.user)

@@ -20,7 +20,7 @@ module.exports = {
   /**
    * Update user by ID
    */
-  updateUserById(req, res) {
+  updateUserById(req, res, next) {
     logger.debug('Updating user with data:', req.body);
 
     req.user.setEditableData(req.body);
@@ -29,7 +29,7 @@ module.exports = {
         logger.info(`User ID "${req.user.id}" updated`);
         res.send(req.user.getReadableData());
       })
-      .catch(err => next(new UserErrors.UnknownUserError(err.message || err)));
+      .catch(err => next(err || new UserErrors.UnknownUserError()));
   },
 
   /**
@@ -41,7 +41,7 @@ module.exports = {
         let boardsData = boards.map(board => board.getReadableData());
         res.send(boardsData);
       })
-      .catch(err => next(new UserErrors.UnknownUserError(err.message || err)));
+      .catch(err => next(err || new UserErrors.UnknownUserError()));
   },
 
   /**
@@ -74,7 +74,7 @@ module.exports = {
           next(new UserErrors.InvalidRequestAccessTokenCodeError());
         }
       })
-      .catch(err => next(new UserErrors.UnknownUserError(err.message || err)));
+      .catch(err => next(err || new UserErrors.UnknownUserError()));
   },
 
   /**
@@ -98,7 +98,7 @@ module.exports = {
             next(new UserErrors.UserNotFoundError(req.user.id));
           }
         })
-        .catch(err => next(new UserErrors.UnknownUserError(err.message || err)));
+        .catch(err => next(err || new UserErrors.UnknownUserError()));
     });
   },
 
