@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
 const _ = require('lodash');
+const Team = require('./team.model');
+const ModelUtils = require('utils/model.utils');
 const BoardErrors = require('errors/board.errors');
 const UserErrors = require('errors/user.errors');
 
@@ -18,7 +20,7 @@ const BoardSchema = new mongoose.Schema({
   horizontal_relation: Boolean,
   team: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Team'
+    ref: 'teams'
   },
   language: {
     type: String,
@@ -78,14 +80,30 @@ BoardSchema.methods.setEditableData = function (data) {
  */
 BoardSchema.statics.findByUserId = function (userId) {
   let query = {
-    user: userId
-  };
-  let options = {
-    sort: {
-      created_at: -1
+    users: {
+      $elemMatch: {
+        user: userId
+      }
     }
   };
-  return this.find(query, {}, options);
+  return Team.find(query)
+    .then(teams => {
+      let query = {
+        $or: [{
+          user: userId
+        }, {
+          team: {
+            $in: teams
+          }
+        }]
+      };
+      let options = {
+        sort: {
+          created_at: -1
+        }
+      };
+      return this.find(query, {}, options);
+    });
 };
 
 /**
@@ -93,12 +111,20 @@ BoardSchema.statics.findByUserId = function (userId) {
  */
 BoardSchema.statics.verifyPermissions = function (boardId, userId) {
   return this.findById(boardId)
+    .populate('team')
     .then(board => {
       if (!board) {
         throw new BoardErrors.BoardNotFoundError(boardId);
       }
-      if (board.user.toString() !== userId.toString()) {
-        throw new UserErrors.UnauthorizedUserError();
+      if (!ModelUtils.equalIds(board.user, userId)) {
+        if (board.team) {
+          let user = board.team.users.find(u => ModelUtils.equalIds(u.user, userId));
+          if (!user) {
+            throw new UserErrors.UnauthorizedUserError();
+          }
+        } else {
+          throw new UserErrors.UnauthorizedUserError();
+        }
       }
       return {
         board
