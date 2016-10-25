@@ -145,6 +145,7 @@ def find_relation_types(relations):
 
 
 def group_by_relation(relations, items):
+    relations = list(filter(lambda r: 'type' in r, relations))
     vertical_relations = list(filter(lambda r: r['type'] == 'vertical', relations))
     horizontal_relations = list(filter(lambda r: r['type'] == 'horizontal', relations))
     for item in items:
