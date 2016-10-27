@@ -14,7 +14,7 @@ from utils.logger import Logger
 logger = Logger('process_board')
 
 
-def process_board(image_file, lang):
+def process_board(image_file, lang, free_mode):
     graph = tf.Graph()
 
     with graph.as_default():
@@ -48,10 +48,12 @@ def process_board(image_file, lang):
 
         relations, items = data_utils.read_text(image, relations, items, lang=lang)
         relations, items = data_utils.find_element_centers(relations, items)
-        relations = data_utils.find_relation_types(relations)
-        relations, items = data_utils.group_by_relation(relations, items)
-        relations,items = data_utils.sort_by_position(relations, items)
-        data_utils.prepare_response_data(relations, items, users)
+
+        if not free_mode:
+            relations = data_utils.find_relation_types(relations)
+            relations, items = data_utils.group_by_relation(relations, items)
+            relations,items = data_utils.sort_by_position(relations, items)
+            data_utils.prepare_response_data(relations, items, users)
 
         # Print the JSON response
         print(json.dumps({
@@ -66,7 +68,7 @@ def process_board(image_file, lang):
 def main(argv):
     help_text = 'Usage: process_board.py -i <image>'
     try:
-        opts, args = getopt.getopt(argv, "hi:l:g:", ['help', 'image=', 'lang=', 'log='])
+        opts, args = getopt.getopt(argv, "hi:l:g:f", ['help', 'image=', 'lang=', 'log=', 'free'])
     except getopt.GetoptError:
         print(help_text)
         sys.exit(2)
@@ -74,6 +76,7 @@ def main(argv):
     image = None
     lang = None
     log_level = None
+    free_mode = False
     for o, a in opts:
         if o in ("-h", "--help"):
             print(help_text)
@@ -84,6 +87,8 @@ def main(argv):
             lang = a
         elif o in ("-g", "--log"):
             log_level = a
+        elif o in ("-f", "--free"):
+            free_mode = True
 
     if image is None:
         print(help_text)
@@ -92,7 +97,7 @@ def main(argv):
     if not log_level is None:
         Logger.set_level(log_level)
 
-    process_board(image, lang)
+    process_board(image, lang, free_mode)
 
 
 if __name__ == "__main__":
