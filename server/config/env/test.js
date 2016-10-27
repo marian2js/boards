@@ -15,6 +15,10 @@ module.exports = {
     facebook: {
       client_id: 'facebook_client_id',
       client_secret: 'facebook_client_secret'
+    },
+    github: {
+      client_id: 'github_client_id',
+      client_secret: 'github_client_secret'
     }
   },
   secrets: {
