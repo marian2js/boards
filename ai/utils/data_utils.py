@@ -100,8 +100,9 @@ def locate_labels(image, model, y_conv, sess):
 
     users = []
     for item in items:
-        item['users'] = localte_users(image, item, model, y_conv, sess)
-        users += item['users']
+        item['users'] = []
+        # item['users'] = localte_users(image, item, model, y_conv, sess)
+        # users += item['users']
 
     for elem in (relations + items + users):
         elem.pop('type', None)
@@ -117,6 +118,9 @@ def find_element_centers(relations, items):
 
 
 def find_relation_types(relations):
+    if len(relations) == 0:
+        return relations
+
     # Set ids of each relation
     relation_id = 1
     for relation in relations:
