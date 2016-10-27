@@ -11,7 +11,7 @@ router.post('/', boardsController.createBoard);
 router.get('/:boardId/relations', boardsController.getBoardRelations);
 router.get('/:boardId/items', boardsController.getBoardItems);
 
-router.get('/:boardId/export/printable', boardsController.exportPrintableBoard);
-router.post('/:boardId/import/printable', boardsController.importPrintableBoard);
+router.get('/:boardId/export', boardsController.exportBoard);
+router.post('/:boardId/import', boardsController.importBoard);
 
 module.exports = router;

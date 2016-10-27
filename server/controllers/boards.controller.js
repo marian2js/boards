@@ -112,7 +112,7 @@ module.exports = {
   /**
    * Get a PDF with the printable data of the board
    */
-  exportPrintableBoard(req, res, next) {
+  exportBoard(req, res, next) {
     logger.debug(`Generating printable version of board "${req.board.name}"`);
 
     let data = {};
@@ -149,7 +149,7 @@ module.exports = {
   /**
    * Import a printed image of a board
    */
-  importPrintableBoard(req, res, next) {
+  importBoard(req, res, next) {
     logger.debug(`Importing image of board "${req.board.name}"`);
 
     let form = new formidable.IncomingForm();
