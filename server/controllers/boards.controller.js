@@ -23,7 +23,7 @@ module.exports = {
     return board.save()
       .then(() => {
         logger.info(`Board "${board.name}" created`);
-        res.send(board.getReadableData());
+        res.status(201).send(board.getReadableData());
       })
       .catch(err => next(err || new BoardErrors.UnknownBoardError()));
   },

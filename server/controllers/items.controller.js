@@ -16,7 +16,7 @@ module.exports = {
     return item.save()
       .then(() => {
         logger.info(`Item ID "${item.id}" created`);
-        res.send(item.getReadableData());
+        res.status(201).send(item.getReadableData());
       })
       .catch(err => next(err || new ItemErrors.UnknownItemError()));
   },

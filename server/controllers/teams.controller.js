@@ -16,7 +16,7 @@ module.exports = {
     return team.save()
       .then(() => {
         logger.info(`Team "${team.name}" created`);
-        res.send(team.getReadableData());
+        res.status(201).send(team.getReadableData());
       })
       .catch(err => next(err || new TeamErrors.UnknownTeamError()));
   },

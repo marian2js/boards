@@ -16,7 +16,7 @@ module.exports = {
     return relation.save()
       .then(() => {
         logger.info(`Relation "${relation.name}" created`);
-        res.send(relation.getReadableData());
+        res.status(201).send(relation.getReadableData());
       })
       .catch(err => next(err || new RelationErrors.UnknownRelationError()));
   },
