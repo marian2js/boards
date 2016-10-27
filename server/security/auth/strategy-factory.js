@@ -1,7 +1,9 @@
 const GoogleStrategy = require('./google-strategy');
+const FacebookStrategy = require('./facebook-strategy');
 
 const providers = {
-  google: GoogleStrategy
+  google: GoogleStrategy,
+  facebook: FacebookStrategy,
 };
 
 module.exports = {

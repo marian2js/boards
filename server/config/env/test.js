@@ -11,6 +11,10 @@ module.exports = {
     google: {
       client_id: 'google_client_id',
       client_secret: 'google_client_secret'
+    },
+    facebook: {
+      client_id: 'facebook_client_id',
+      client_secret: 'facebook_client_secret'
     }
   },
   secrets: {

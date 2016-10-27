@@ -43,6 +43,7 @@ class SocialAuthStrategy extends BaseStrategy {
    * @returns {Promise}
    */
   findOrCreate(profile) {
+    console.log('profile', profile);
     let data = {};
     let query = {
       $or: [{
