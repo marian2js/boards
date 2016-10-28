@@ -35,6 +35,20 @@ def reformat(dataset, labels):
     return dataset, labels
 
 
+def train_model(model, train_step, accuracy, steps, labels, dataset):
+    for i in range(steps):
+        offset = (i * batch_size) % (labels.shape[0] - batch_size)
+        batch_data = dataset[offset:(offset + batch_size), :, :, :]
+        batch_labels = labels[offset:(offset + batch_size), :]
+
+        if i % 100 == 0:
+            train_accuracy = accuracy.eval(
+                feed_dict={model.train_data: batch_data, label_data: batch_labels, model.keep_prob: 1.0})
+            logger.info("step %d/%d, training accuracy %g" % (i, steps, train_accuracy))
+
+        train_step.run(feed_dict={model.train_data: batch_data, label_data: batch_labels, model.keep_prob: 0.5})
+
+
 train_dataset, train_labels = reformat(train_dataset, train_labels)
 test_dataset, test_labels = reformat(test_dataset, test_labels)
 
@@ -64,23 +78,22 @@ with tf.Session(graph=graph) as sess:
     sess.run(init_op)
 
     # Train the CNN
-    for i in range(num_training_steps):
-        offset = (i * batch_size) % (train_labels.shape[0] - batch_size)
-        batch_data = train_dataset[offset:(offset + batch_size), :, :, :]
-        batch_labels = train_labels[offset:(offset + batch_size), :]
+    train_model(model, train_step, accuracy, num_training_steps, train_labels, train_dataset)
 
-        if i % 100 == 0:
-            train_accuracy = accuracy.eval(
-                feed_dict={model.train_data: batch_data, label_data: batch_labels, model.keep_prob: 1.0})
-            logger.info("step %d, training accuracy %g" % (i, train_accuracy))
+    # Evaluate test data
+    test_data_accuracy = accuracy.eval(
+        feed_dict={model.train_data: test_dataset, label_data: test_labels, model.keep_prob: 1.0})
+    logger.info("test accuracy %g" % test_data_accuracy)
 
-        train_step.run(feed_dict={model.train_data: batch_data, label_data: batch_labels, model.keep_prob: 0.5})
+    # Train test data
+    test_train_steps = int(num_training_steps * config['test_dataset_percentage'])
+    train_model(model, train_step, accuracy, test_train_steps, test_labels, test_dataset)
 
     save_path = saver.save(sess, config['model_file'])
     logger.info("Model saved in file: %s" % save_path)
 
-    # Evaluate test data
-    logger.info("test accuracy %g" % accuracy.eval(
+    logger.info("original test accuracy %g" % test_data_accuracy)
+    logger.info("after train with test data accuracy %g" % accuracy.eval(
         feed_dict={model.train_data: test_dataset, label_data: test_labels, model.keep_prob: 1.0}))
 
     logger.info("Training Time: %s seconds" % (time.time() - start_time))
