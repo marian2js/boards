@@ -9,8 +9,8 @@ logger = Logger('generate')
 
 relation_objects, n = image_utils.load_original_images(config['relation']['objects_folder'])
 item_objects, n = image_utils.load_original_images(config['item']['objects_folder'])
-relation_backgrounds, n = image_utils.load_original_images(config['backgrounds']['original_folder'], image_size=800)
-item_backgrounds, n = image_utils.load_original_images(config['backgrounds']['original_folder'], image_size=420)
+relation_backgrounds, n = image_utils.load_original_images(config['backgrounds']['original_folder'], image_size=[700, 850])
+item_backgrounds, n = image_utils.load_original_images(config['backgrounds']['original_folder'], image_size=[400, 500])
 
 
 def append_images(object_image, background, dest):
@@ -34,7 +34,7 @@ for i in range(3000):
         logger.info('Generated %d relations' % i)
 
 data_utils.clean_directory(config['item']['generated_folder'])
-for i in range(3000):
+for i in range(4000):
     item_object = random.choice(item_objects)
     background = random.choice(item_backgrounds)
     append_images(item_object, background, config['item']['generated_folder'] + '/' + str(i) + '.jpg')

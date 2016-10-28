@@ -1,5 +1,6 @@
 import tensorflow as tf
 import os
+import random
 from scipy import ndimage
 from scipy import misc
 from skimage.draw import line_aa
@@ -41,7 +42,10 @@ def load_original_images(folder, image_size=None):
         if not image.startswith('.'):
             image_file = os.path.join(folder, image)
             norm, image_data = read_image(image_file)
-            if image_size is not None:
+            if isinstance(image_size, list):
+                size = random.randint(image_size[0], image_size[1])
+                image_data = resize_image(image_data, size, size)
+            elif image_size is not None:
                 image_data = resize_image(image_data, image_size, image_size)
             dataset.append(image_data)
             names.append(image)
@@ -51,6 +55,10 @@ def load_original_images(folder, image_size=None):
 def read_image(image_file):
     image_data = ndimage.imread(image_file, mode='L').astype(float)
     return normalize_image(image_data), image_data
+
+
+def read_image_color(image_file):
+    return ndimage.imread(image_file).astype(float)
 
 
 def normalize_image(image_data):
