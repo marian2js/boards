@@ -5,6 +5,8 @@ from config import config
 from utils import image_utils
 from utils import ocr_utils
 from utils.logger import Logger
+import shutil
+import os
 
 logger = Logger('data_utils')
 
@@ -213,3 +215,11 @@ def prepare_response_data(relations, items, users):
         elem.pop('center_x', None)
         elem.pop('center_y', None)
     return relations, items, users
+
+
+def clean_directory(dir):
+    if os.path.exists(dir):
+        shutil.rmtree(dir)
+        os.makedirs(dir)
+    else:
+        os.makedirs(dir)

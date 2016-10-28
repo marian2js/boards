@@ -2,6 +2,7 @@ import random
 from scipy import misc
 from config import config
 from utils import image_utils
+from utils import data_utils
 from utils.logger import Logger
 
 logger = Logger('generate')
@@ -24,6 +25,7 @@ def append_images(object_image, background, dest):
     background[position[0]:object_size[0] + position[0], position[1]:object_size[1] + position[1]] = object_image
     misc.imsave(dest, background)
 
+data_utils.clean_directory(config['relation']['generated_folder'])
 for i in range(3000):
     relation_object = random.choice(relation_objects)
     background = random.choice(relation_backgrounds)
@@ -31,6 +33,7 @@ for i in range(3000):
     if i % 100 == 0:
         logger.info('Generated %d relations' % i)
 
+data_utils.clean_directory(config['item']['generated_folder'])
 for i in range(3000):
     item_object = random.choice(item_objects)
     background = random.choice(item_backgrounds)

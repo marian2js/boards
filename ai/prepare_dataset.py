@@ -1,6 +1,7 @@
 from scipy import misc
 from config import config
 from utils import image_utils
+from utils import data_utils
 from utils.logger import Logger
 
 logger = Logger('prepare_dataset')
@@ -36,6 +37,7 @@ outliers_dataset = outliers_dataset + generated_images
 outliers_dataset = outliers_dataset + backgrounds_dataset
 
 # Save items
+data_utils.clean_directory(config['item']['folder'])
 for i in range(len(items_dataset)):
     path = config['item']['folder'] + '/' + str(i) + '.jpg'
     logger.info('creating %s' % path)
@@ -43,6 +45,7 @@ for i in range(len(items_dataset)):
     misc.imsave(path, image)
 
 # Save relations
+data_utils.clean_directory(config['relation']['folder'])
 for i in range(len(relations_dataset)):
     path = config['relation']['folder'] + '/' + str(i) + '.jpg'
     logger.info('creating %s' % path)
@@ -50,6 +53,7 @@ for i in range(len(relations_dataset)):
     misc.imsave(path, image)
 
 # Save users
+data_utils.clean_directory(config['user']['folder'])
 for i in range(len(users_dataset)):
     path = config['user']['folder'] + '/' + str(i) + '.jpg'
     logger.info('creating %s' % path)
@@ -57,6 +61,7 @@ for i in range(len(users_dataset)):
     misc.imsave(path, image)
 
 # Save outliers
+data_utils.clean_directory(config['outlier']['folder'])
 for i in range(len(outliers_dataset)):
     path = config['outlier']['folder'] + '/' + str(i) + '.jpg'
     logger.info('creating %s' % path)
