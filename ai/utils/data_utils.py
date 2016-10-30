@@ -88,14 +88,19 @@ def localte_users(image, item, model, y_conv, sess):
 
 def locate_labels(image, model, y_conv, sess):
     zone_marks = np.zeros((image.shape[0], image.shape[1]))
-    resize = 21
-    matches = []
+    resize = math.ceil(min(image.shape[0], image.shape[1]) / 100)
     targets = [0, 1]
-    matches += classify_with_window(image, targets, zone_marks, resize, model, y_conv, sess)
-    matches += classify_with_window(image, targets, zone_marks, int(resize // pow(1.2, 2)), model, y_conv, sess)
-    matches += classify_with_window(image, targets, zone_marks, int(resize // pow(1.2, 3)), model, y_conv, sess)
-    matches += classify_with_window(image, targets, zone_marks, int(resize // pow(1.2, 4)), model, y_conv, sess)
-    matches += classify_with_window(image, targets, zone_marks, int(resize // pow(1.2, 5)), model, y_conv, sess)
+    matches = []
+    count = 0
+    i = 0
+    last_resize = 0
+    while (count == 0 or count < len(matches)) and i < 6:
+        count = len(matches)
+        current_resize = int(resize // pow(1.2, i))
+        if current_resize != last_resize:
+            matches += classify_with_window(image, targets, zone_marks, current_resize, model, y_conv, sess)
+            last_resize = current_resize
+        i += 1
 
     relations = list(filter(lambda m: m['type'] == 1, matches))
     items = list(filter(lambda m: m['type'] == 0, matches))
@@ -103,8 +108,8 @@ def locate_labels(image, model, y_conv, sess):
     users = []
     for item in items:
         item['users'] = []
-        # item['users'] = localte_users(image, item, model, y_conv, sess)
-        # users += item['users']
+        item['users'] = localte_users(image, item, model, y_conv, sess)
+        users += item['users']
 
     for elem in (relations + items + users):
         elem.pop('type', None)
