@@ -22,7 +22,7 @@ image_size = config['image_size']
 num_labels = config['num_labels']
 num_channels = config['image_channels']
 
-batch_size = 5
+batch_size = 10
 
 num_training_steps = 20000
 
