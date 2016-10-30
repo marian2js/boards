@@ -95,6 +95,8 @@ def locate_labels(image, model, y_conv, sess):
     i = 0
     last_resize = 0
     while (count == 0 or count < len(matches)) and i < 6:
+        if i == 1 and len(matches) < 3:
+            i += 1
         count = len(matches)
         current_resize = int(resize // pow(1.2, i))
         if current_resize != last_resize:
@@ -108,8 +110,8 @@ def locate_labels(image, model, y_conv, sess):
     users = []
     for item in items:
         item['users'] = []
-        item['users'] = localte_users(image, item, model, y_conv, sess)
-        users += item['users']
+        # item['users'] = localte_users(image, item, model, y_conv, sess)
+        # users += item['users']
 
     for elem in (relations + items + users):
         elem.pop('type', None)
@@ -228,3 +230,35 @@ def clean_directory(dir):
         os.makedirs(dir)
     else:
         os.makedirs(dir)
+
+
+# Ported from https://github.com/aceakash/string-similarity/blob/master/compare-strings.js
+def compare_strings(str1, str2):
+    def letter_pairs(text):
+        num_pairs = len(text) - 1
+        pairs = []
+        for i in range(num_pairs):
+            pairs.append(text[i:i + 2])
+        return pairs
+
+    def word_letter_pairs(text):
+        pairs = []
+        for word in text.split():
+            word_pairs = letter_pairs(word)
+            for pair in word_pairs:
+                pairs.append(pair)
+        return pairs
+
+    pairs1 = word_letter_pairs(str1.upper())
+    pairs2 = word_letter_pairs(str2.upper())
+    intersection = 0
+    union = len(pairs1) + len(pairs2)
+    for pair1 in pairs1:
+        for i in range(len(pairs2)):
+            pair2 = pairs2[i]
+            if pair1 == pair2:
+                intersection += 1
+                del pairs2[i]
+                break
+
+    return (2.0 * intersection) / union
