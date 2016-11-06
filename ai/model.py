@@ -10,12 +10,12 @@ def max_pool_2x2(x):
     return tf.nn.max_pool(x, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')
 
 
-def weight_variable(shape):
+def weight(shape):
     initial = tf.truncated_normal(shape, stddev=0.1)
     return tf.Variable(initial)
 
 
-def bias_variable(shape):
+def bias(shape):
     initial = tf.constant(0.1, shape=shape)
     return tf.Variable(initial)
 
@@ -29,7 +29,9 @@ class Model:
         self.conv1_num_channels = 32
         self.conv2_patch_size = 5
         self.conv2_num_channels = 64
+        self.image_fc_size = self.image_size // 4
         self.fc1_num_neurons = 1024
+        self.fc2_num_neurons = 1024
 
         self.train_data = None
         self.keep_prob = None
@@ -38,42 +40,47 @@ class Model:
         self.train_data = tf.placeholder(tf.float32,
                                          shape=[None, self.image_size, self.image_size, self.image_channels])
 
-        # ------ Convolutional Layer 1 ------ #
+        # Convolutional Layer 1
 
-        conv1_weights = weight_variable(
+        conv1_weights = weight(
             [self.conv1_patch_size, self.conv1_patch_size, self.image_channels, self.conv1_num_channels])
-        conv1_biases = bias_variable([self.conv1_num_channels])
+        conv1_biases = bias([self.conv1_num_channels])
+        conv1 = tf.nn.relu(conv2d(self.train_data, conv1_weights) + conv1_biases)
 
-        h_conv1 = tf.nn.relu(conv2d(self.train_data, conv1_weights) + conv1_biases)
-        h_pool1 = max_pool_2x2(h_conv1)
+        # Pooling Layer 1
 
-        # ------ Convolutional Layer 2 ------ #
+        pool1 = max_pool_2x2(conv1)
 
-        conv2_weights = weight_variable(
+        # Convolutional Layer 2
+
+        conv2_weights = weight(
             [self.conv2_patch_size, self.conv2_patch_size, self.conv1_num_channels, self.conv2_num_channels])
-        conv2_biases = bias_variable([self.conv2_num_channels])
+        conv2_biases = bias([self.conv2_num_channels])
+        conv2 = tf.nn.relu(conv2d(pool1, conv2_weights) + conv2_biases)
 
-        h_conv2 = tf.nn.relu(conv2d(h_pool1, conv2_weights) + conv2_biases)
-        h_pool2 = max_pool_2x2(h_conv2)
+        # Pooling Layer 2
 
-        # ------ Fully Connected Layer ------ #
+        pool2 = max_pool_2x2(conv2)
 
-        image_patch_size = self.image_size // 4
-        fc1_weights = weight_variable(
-            [image_patch_size * image_patch_size * self.conv2_num_channels, self.fc1_num_neurons])
-        fc1_biases = bias_variable([self.fc1_num_neurons])
+        # Fully Connected Layer
 
-        h_pool2_flat = tf.reshape(h_pool2, [-1, image_patch_size * image_patch_size * self.conv2_num_channels])
-        h_fc1 = tf.nn.relu(tf.matmul(h_pool2_flat, fc1_weights) + fc1_biases)
+        fc1_weights = weight([pow(self.image_fc_size, 2) * self.conv2_num_channels, self.fc1_num_neurons])
+        fc1_biases = bias([self.fc1_num_neurons])
+        pool2 = tf.reshape(pool2, [-1, pow(self.image_fc_size, 2) * self.conv2_num_channels])
+        fc1 = tf.nn.relu(tf.matmul(pool2, fc1_weights) + fc1_biases)
 
-        # ------ Dropout ------ #
+        fc2_weights = weight([self.fc1_num_neurons, self.fc2_num_neurons])
+        fc2_biases = bias([self.fc2_num_neurons])
+        fc2 = tf.nn.relu(tf.matmul(fc1, fc2_weights) + fc2_biases)
+
+        # Dropout
 
         self.keep_prob = tf.placeholder(tf.float32)
-        h_fc1_drop = tf.nn.dropout(h_fc1, self.keep_prob)
+        fc1_drop = tf.nn.dropout(fc2, self.keep_prob)
 
-        # ------ Readout Layer ------ #
+        # Readout Layer
 
-        layer4_weights = weight_variable([self.fc1_num_neurons, self.num_labels])
-        layer4_biases = bias_variable([self.num_labels])
+        layer4_weights = weight([self.fc2_num_neurons, self.num_labels])
+        layer4_biases = bias([self.num_labels])
 
-        return tf.nn.softmax(tf.matmul(h_fc1_drop, layer4_weights) + layer4_biases)
+        return tf.nn.softmax(tf.matmul(fc1_drop, layer4_weights) + layer4_biases)
