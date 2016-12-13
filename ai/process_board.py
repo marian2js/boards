@@ -6,7 +6,7 @@ import time
 import json
 from scipy import misc
 from model import Model
-from config import config
+from model_config import model_config
 from utils import data_utils
 from utils import image_utils
 from utils.logger import Logger
@@ -19,7 +19,7 @@ def process_board(image_file, lang, free_mode):
 
     with graph.as_default():
         model = Model()
-        y_conv = model.prepare()
+        y_conv = model.get_model()
 
         # Add an op to initialize the variables.
         init_op = tf.initialize_all_variables()
@@ -30,7 +30,7 @@ def process_board(image_file, lang, free_mode):
     with tf.Session(graph=graph) as sess:
         sess.run(init_op)
 
-        saver.restore(sess, config['model_file'])
+        saver.restore(sess, model_config.get('model_file'))
         logger.info("Model restored.")
 
         start_time = time.time()
@@ -38,13 +38,32 @@ def process_board(image_file, lang, free_mode):
         image_data, image = image_utils.read_image(image_file)
         relations, items, users = data_utils.locate_labels(image_data, model, y_conv, sess)
 
+        # data_utils.clean_directory('./tmp')
+        # i = 0
+        # for elem in relations:
+        #     tmp_image = color_image[elem['zone'][0]:elem['zone'][1], elem['zone'][2]:elem['zone'][3]]
+        #     tmp_image = image_utils.clean_shape(tmp_image)
+        #     path = 'tmp/relation_' + str(i) + '.jpg'
+        #     i += 1
+        #     logger.debug('Saving results image on %s' % path)
+        #     misc.imsave(path, tmp_image)
+        #
+        # i = 0
+        # for elem in items:
+        #     tmp_image = color_image[elem['zone'][0]:elem['zone'][1], elem['zone'][2]:elem['zone'][3]]
+        #     tmp_image = image_utils.clean_shape(tmp_image)
+        #     path = 'tmp/item_' + str(i) + '.jpg'
+        #     i += 1
+        #     logger.debug('Saving results image on %s' % path)
+        #     misc.imsave(path, tmp_image)
+
         # Creates an image showing the matches
-        image_data = image_utils.clean_shape(image_data)
-        for match in (relations + items + users):
-            image_data = image_utils.draw_border(image_data, match['zone'][0], match['zone'][2], match['zone'][1], match['zone'][3])
-        path = 'dataset/results.jpg'
-        logger.debug('Saving results image on %s' % path)
-        misc.imsave(path, image_data)
+        # tmp_image = image_utils.clean_shape(image_data)
+        # for match in (relations + items + users):
+        #     tmp_image = image_utils.draw_border(tmp_image, match['zone'][0], match['zone'][2], match['zone'][1], match['zone'][3])
+        # path = 'dataset/results.jpg'
+        # logger.debug('Saving results image on %s' % path)
+        # misc.imsave(path, tmp_image)
 
         relations, items = data_utils.read_text(image, relations, items, lang=lang)
         relations, items = data_utils.find_element_centers(relations, items)

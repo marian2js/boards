@@ -1,5 +1,5 @@
 import tensorflow as tf
-from config import config
+from model_config import model_config
 
 
 def conv2d(x, W):
@@ -22,9 +22,9 @@ def bias(shape):
 
 class Model:
     def __init__(self):
-        self.num_labels = config['num_labels']
-        self.image_size = config['image_size']
-        self.image_channels = config['image_channels']
+        self.num_labels = model_config.get('num_labels')
+        self.image_size = model_config.get('image_size')
+        self.image_channels = model_config.get('image_channels')
         self.conv1_patch_size = 5
         self.conv1_num_channels = 32
         self.conv2_patch_size = 5
@@ -36,7 +36,7 @@ class Model:
         self.train_data = None
         self.keep_prob = None
 
-    def prepare(self):
+    def get_model(self):
         self.train_data = tf.placeholder(tf.float32,
                                          shape=[None, self.image_size, self.image_size, self.image_channels])
 
@@ -62,12 +62,14 @@ class Model:
 
         pool2 = max_pool_2x2(conv2)
 
-        # Fully Connected Layer
+        # Fully Connected Layer 1
 
         fc1_weights = weight([pow(self.image_fc_size, 2) * self.conv2_num_channels, self.fc1_num_neurons])
         fc1_biases = bias([self.fc1_num_neurons])
         pool2 = tf.reshape(pool2, [-1, pow(self.image_fc_size, 2) * self.conv2_num_channels])
         fc1 = tf.nn.relu(tf.matmul(pool2, fc1_weights) + fc1_biases)
+
+        # Fully Connected Layer 2
 
         fc2_weights = weight([self.fc1_num_neurons, self.fc2_num_neurons])
         fc2_biases = bias([self.fc2_num_neurons])
