@@ -137,8 +137,10 @@ RelationSchema.statics.createOrUpdateRelations = function (board, newRelations) 
       });
 
       // Find match by name
-      relations.forEach((relation, i) => {
-        let pos = newRelations.findIndex(l => DataUtils.namesMatch(l.text, relation.name));
+      relations.forEach(relation => {
+        let pos = newRelations.findIndex(r => {
+          return DataUtils.namesMatch(r.text, relation.name) && r.type === relation.type;
+        });
         if (pos !== -1) {
           promises.push(relation.updateWithData(newRelations[pos]));
           newRelations.splice(pos, 1);
@@ -147,9 +149,9 @@ RelationSchema.statics.createOrUpdateRelations = function (board, newRelations) 
       });
 
       // Find match by position
-      relations.forEach((relation, i) => {
+      relations.forEach(relation => {
         if (!relation.found) {
-          let pos = newRelations.findIndex(r => r.index === i && r.type === relation.type);
+          let pos = newRelations.findIndex(r => r.index === relation.position && r.type === relation.type);
           if (pos !== -1) {
             promises.push(relation.updateWithData(newRelations[pos]));
             newRelations.splice(pos, 1);
